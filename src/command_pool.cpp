@@ -32,7 +32,8 @@ namespace geodesy::gpu {
 	}
 
 	std::shared_ptr<command_buffer> command_pool::allocate_command_buffer(VkCommandBufferLevel aLevel) {
-		return nullptr;
+		std::vector<std::shared_ptr<command_buffer>> CB = this->allocate_command_buffers(1, aLevel);
+		return CB.size() > 0 ? CB[0] : nullptr;
 	}
 	
 	std::vector<std::shared_ptr<command_buffer>> command_pool::allocate_command_buffers(size_t aCount, VkCommandBufferLevel aLevel) {
