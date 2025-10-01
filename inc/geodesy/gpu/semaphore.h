@@ -12,6 +12,8 @@ namespace geodesy::gpu {
 
         VkSemaphore Handle;
 
+        semaphore();
+        semaphore(std::shared_ptr<context> aContext);
         ~semaphore();
         
     };
