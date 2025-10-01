@@ -1,0 +1,2 @@
+The goal of this library is to make an incredibly low level api like vulkan more manageable. The reasons why the geodesy engine primarily uses
+Vulkan is because of its rich capabilities. The problem is that it is incredibly cumbersome to manage and handle such a verbose API.
