@@ -12,7 +12,7 @@ namespace geodesy::gpu {
 		this->Handle = VK_NULL_HANDLE;
 	}
 
-	command_buffer::command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBuffer aHandle) : command_pool() {
+	command_buffer::command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBuffer aHandle) : command_buffer() {
 		this->Context = aContext;
 		this->CommandPool = aCommandPool;
 		this->Handle = aHandle;

@@ -25,15 +25,13 @@ namespace geodesy::gpu {
 		CBAI.commandPool				= this->Handle;
 		CBAI.level						= aLevel;
 		CBAI.commandBufferCount			= aCount;
-		Result = vkAllocateCommandBuffers(this->Context->Handle, &CBAI, NULL, CB.data());
+		Result = vkAllocateCommandBuffers(this->Context->Handle, &CBAI, CB.data());
 		if (Result == VK_SUCCESS) {
 			for (auto& buffer : CB) {
-				CommandBuffers.push_back(std::make_shared<command_buffer>(this->Context, buffer));
+				CommandBuffers.push_back(std::make_shared<command_buffer>(this->Context, this->shared_from_this(), buffer));
 			}
 		}
-		else {
-			return CommandBuffers;
-		}
+		return CommandBuffers;
 	}
 	
 	

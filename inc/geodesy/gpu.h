@@ -5,6 +5,7 @@
 #include "gpu/config.h"
 
 #include "gpu/device.h"
+#include "gpu/resource.h"
 #include "gpu/fence.h"
 #include "gpu/semaphore.h"
 #include "gpu/command_buffer.h"

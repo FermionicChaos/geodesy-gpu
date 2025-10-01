@@ -4,6 +4,8 @@
 #include "config.h"
 
 #include "device.h"
+#include "fence.h"
+#include "semaphore.h"
 
 namespace geodesy::gpu {
 
@@ -32,6 +34,19 @@ namespace geodesy::gpu {
 		~context();
 
 		void* function_pointer(std::string aFunctionName);
+
+		// template<typename T>
+		// std::vector<std::shared_ptr<T>> create_resource(size_t aCount) {
+		// 	std::vector<std::shared_ptr<T>> Resources;
+		// 	for (size_t i = 0; i < aCount; i++) {
+		// 		std::shared_ptr<T> NewResource;
+		// 		NewResource = geodesy::make<T>(this->shared_from_this());
+		// 		if (NewResource) {
+		// 			Resources.push_back(NewResource);
+		// 		}
+		// 	}
+		// 	return Resources;
+		// }
 
 	private:
 

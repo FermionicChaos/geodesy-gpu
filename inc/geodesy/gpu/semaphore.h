@@ -3,13 +3,13 @@
 
 #include "config.h"
 
+#include "resource.h"
+
 namespace geodesy::gpu {
 
-    class semaphore {
+    class semaphore : public resource {
     public:
 
-        std::shared_ptr<context> Context;
-        
         VkSemaphore Handle;
 
         ~semaphore();

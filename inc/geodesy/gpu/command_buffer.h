@@ -3,12 +3,13 @@
 
 #include "config.h"
 
+#include "resource.h"
+
 namespace geodesy::gpu {
 
-	class command_buffer {
+	class command_buffer : public resource {
 	public:
-
-		std::shared_ptr<context> 			Context;
+	
 		std::shared_ptr<command_pool> 		CommandPool;
 
 		VkCommandBuffer 					Handle;
@@ -22,7 +23,7 @@ namespace geodesy::gpu {
 
 		void begin_rendering(VkRect2D aRenderArea, std::vector<VkImageView> aColorAttachments, VkImageView aDepthAttachment = VK_NULL_HANDLE, VkImageView aStencilAttachment = VK_NULL_HANDLE);
 		void end_rendering();
-		
+
 		void bind_vertex_buffers(VkCommandBuffer aCommandBuffer, std::vector<VkBuffer> aBufferList, const VkDeviceSize* aOffset = NULL);
 		void bind_index_buffer(VkCommandBuffer aCommandBuffer, VkBuffer aBufferHandle, VkIndexType aIndexType);
 		void bind_descriptor_sets(VkCommandBuffer aCommandBuffer, VkPipelineBindPoint aPipelineBindPoint, VkPipelineLayout aPipelineLayout, std::vector<VkDescriptorSet> aDescriptorSetList, std::vector<uint32_t> aDynamicOffsetList = std::vector<uint32_t>(0));

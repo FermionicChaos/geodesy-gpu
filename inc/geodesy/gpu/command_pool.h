@@ -3,14 +3,14 @@
 
 #include "config.h"
 
+#include "resource.h"
+
 #include "command_buffer.h"
 
 namespace geodesy::gpu {
 
-	class command_pool {
+	class command_pool : public std::enable_shared_from_this<command_pool>, public resource {
 	public:
-
-		std::shared_ptr<context>        Context;
 
 		VkCommandPool                   Handle;
 

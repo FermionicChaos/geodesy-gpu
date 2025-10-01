@@ -3,15 +3,16 @@
 
 #include "config.h"
 
+#include "resource.h"
+
 namespace geodesy::gpu {
 
-	class fence {
+	class fence : public resource {
 	public:
-
-		std::shared_ptr<context> Context;
 
 		VkFence Handle;
 
+		fence(std::shared_ptr<context> aContext, bool aSignaled = false);
 		~fence();
 
 	};
