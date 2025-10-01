@@ -3,6 +3,8 @@
 
 #include "config.h"
 
+#include "device.h"
+
 namespace geodesy::gpu {
 
 	class device;
@@ -10,11 +12,21 @@ namespace geodesy::gpu {
 	class context : public std::enable_shared_from_this<context> {
 	public:
 
-		VkDevice Handle;
+		std::shared_ptr<instance> 		Instance;
+		std::shared_ptr<device> 		Device;
 
-		// context();
-		// context();
-		// ~context();
+		VkDevice 						Handle;
+
+		context();
+		context(
+			std::shared_ptr<instance> 	aInstance,
+			std::shared_ptr<device> 	aDevice,
+			std::vector<int> 			aExecutionOperations,
+			std::set<std::string> 		aLayers,
+			std::set<std::string> 		aExtensions,
+			void* 						aNext = NULL
+		);
+		~context();
 
 	private:
 

@@ -23,6 +23,7 @@ namespace geodesy::gpu {
 			std::set<std::string> 		aLayers, 
 			std::set<std::string> 		aExtensions,
 			std::array<int, 3> 			aAPIVersion = { 1, 0, 0 },
+			void* 						aNext = NULL,
 			std::string 				aAppName = "",
 			std::array<int, 3> 			aAppVersion = { 1, 0, 0 },
 			std::string 				aEngineName = "",

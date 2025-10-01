@@ -19,6 +19,7 @@ namespace geodesy::gpu {
 		std::set<std::string> 		aLayers, 
 		std::set<std::string> 		aExtensions,
 		std::array<int, 3> 			aAPIVersion,
+		void* 						aNext,
 		std::string 				aAppName,
 		std::array<int, 3> 			aAppVersion,
 		std::string 				aEngineName,
@@ -46,7 +47,7 @@ namespace geodesy::gpu {
 
 		VkInstanceCreateInfo ICI = {};
 		ICI.sType							= VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		ICI.pNext							= NULL;
+		ICI.pNext							= aNext;
 		ICI.flags							= 0;
 		ICI.pApplicationInfo				= &AI;
 		ICI.enabledLayerCount				= LayerList.size();
@@ -85,6 +86,10 @@ namespace geodesy::gpu {
 
 	void* instance::function_pointer(std::string aFunctionName) {
 		return vkGetInstanceProcAddr(this->Handle, aFunctionName.c_str());
+	}
+	
+	std::vector<std::shared_ptr<gpu::device>> instance::get_devices() {
+		return this->Device;
 	}
 	
 }
