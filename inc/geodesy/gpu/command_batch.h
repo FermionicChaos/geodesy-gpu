@@ -22,8 +22,9 @@ namespace geodesy::gpu {
 		std::vector<VkPipelineStageFlags> 				WaitStageList;
 		std::vector<std::shared_ptr<semaphore>> 		SignalSemaphoreList;
 
-		command_batch() {}
-		~command_batch() {}
+		command_batch();
+		command_batch(std::vector<std::shared_ptr<command_buffer>> aCommandBufferList);
+		~command_batch();
 
 		void depends_on(std::shared_ptr<semaphore> aSemaphore, VkPipelineStageFlags aWaitStage, std::shared_ptr<command_batch> aWaitBatch);
 

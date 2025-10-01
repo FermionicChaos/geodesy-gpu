@@ -4,8 +4,13 @@
 #include "config.h"
 
 #include "device.h"
+#include "resource.h"
 #include "fence.h"
 #include "semaphore.h"
+#include "semaphore_pool.h"
+#include "command_buffer.h"
+#include "command_pool.h"
+#include "command_batch.h"
 
 namespace geodesy::gpu {
 
@@ -35,9 +40,9 @@ namespace geodesy::gpu {
 
 		void* function_pointer(std::string aFunctionName);
 
-		// VkResult execute(device::operation aDeviceOperation, const std::shared_ptr<command_buffer>& aCommandBuffer, VkFence aFence = VK_NULL_HANDLE);
-		// VkResult execute(device::operation aDeviceOperation, const std::shared_ptr<command_batch>& aSubmission, VkFence aFence = VK_NULL_HANDLE);
-		// VkResult execute(device::operation aDeviceOperation, const std::vector<std::shared_ptr<command_batch>>& aSubmissionList, VkFence aFence = VK_NULL_HANDLE);
+		VkResult execute(device::operation aDeviceOperation, std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<fence> aFence = nullptr);
+		VkResult execute(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_buffer>> aCommandBufferList, std::shared_ptr<fence> aFence = nullptr);
+		VkResult execute(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_batch>> aCommandBatchList, std::shared_ptr<fence> aFence = nullptr);
 
 		// Generic resource creation with variadic template arguments
 		template<typename T, typename... Args>

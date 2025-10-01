@@ -2,6 +2,13 @@
 
 namespace geodesy::gpu {
 
+	// Internal Execution Submission Structure
+	struct __backend_gpu_submission {
+		std::vector<VkCommandBuffer> 				CommandBufferList;
+		std::vector<VkSemaphore> 					WaitSemaphoreList;
+		std::vector<VkSemaphore> 					SignalSemaphoreList;
+	};
+
 	context::context() {
 		this->Instance = nullptr;
 		this->Device = nullptr;
@@ -108,5 +115,66 @@ namespace geodesy::gpu {
 	void* context::function_pointer(std::string aFunctionName) {
 		return vkGetDeviceProcAddr(this->Handle, aFunctionName.c_str());
 	}
+
+	VkResult context::execute(device::operation aDeviceOperation, std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<fence> aFence) {
+		return this->execute(aDeviceOperation, std::vector<std::shared_ptr<command_buffer>>{ aCommandBuffer }, aFence);
+	}
+
+	VkResult context::execute(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_buffer>> aCommandBufferList, std::shared_ptr<fence> aFence) {
+		std::shared_ptr<command_batch> Batch(new command_batch(aCommandBufferList));
+		return this->execute(aDeviceOperation, std::vector<std::shared_ptr<command_batch>>{ Batch }, aFence);
+	}
+
+	VkResult context::execute(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_batch>> aCommandBatchList, std::shared_ptr<fence> aFence) {
+		// Validate input
+		if (aCommandBatchList.empty()) {
+			return VK_SUCCESS; // Nothing to submit
+		}
+
+		VkQueue ExecutionQueue = VK_NULL_HANDLE;
+		std::vector<VkSubmitInfo> ExecutionLoad(aCommandBatchList.size());
+
+		// First find a queue for the requested operation.
+		if (this->Queue.count(aDeviceOperation) > 0) {
+			ExecutionQueue = this->Queue[aDeviceOperation];
+		}
+		else {
+			return VK_ERROR_FEATURE_NOT_PRESENT;
+		}
+
+		// Populate submission structures.
+		std::vector<__backend_gpu_submission> Submissions(aCommandBatchList.size());
+		for (size_t i = 0; i < aCommandBatchList.size(); i++) {
+			Submissions[i].CommandBufferList = std::vector<VkCommandBuffer>(aCommandBatchList[i]->CommandBufferList.size());
+			for (size_t j = 0; j < aCommandBatchList[i]->CommandBufferList.size(); j++) {
+				Submissions[i].CommandBufferList[j] = aCommandBatchList[i]->CommandBufferList[j]->Handle;
+			}
+			Submissions[i].WaitSemaphoreList = std::vector<VkSemaphore>(aCommandBatchList[i]->WaitSemaphoreList.size());
+			for (size_t j = 0; j < aCommandBatchList[i]->WaitSemaphoreList.size(); j++) {
+				Submissions[i].WaitSemaphoreList[j] = aCommandBatchList[i]->WaitSemaphoreList[j]->Handle;
+			}
+			Submissions[i].SignalSemaphoreList = std::vector<VkSemaphore>(aCommandBatchList[i]->SignalSemaphoreList.size());
+			for (size_t j = 0; j < aCommandBatchList[i]->SignalSemaphoreList.size(); j++) {
+				Submissions[i].SignalSemaphoreList[j] = aCommandBatchList[i]->SignalSemaphoreList[j]->Handle;
+			}
+		}
+
+		// Finalize into VkSubmitInfo structures.
+		for (size_t i = 0; i < aCommandBatchList.size(); i++) {
+			ExecutionLoad[i].sType						= VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			ExecutionLoad[i].pNext						= NULL;
+			ExecutionLoad[i].waitSemaphoreCount			= Submissions[i].WaitSemaphoreList.size();
+			ExecutionLoad[i].pWaitSemaphores			= Submissions[i].WaitSemaphoreList.data();
+			ExecutionLoad[i].pWaitDstStageMask			= aCommandBatchList[i]->WaitStageList.data();
+			ExecutionLoad[i].commandBufferCount			= Submissions[i].CommandBufferList.size();
+			ExecutionLoad[i].pCommandBuffers			= Submissions[i].CommandBufferList.data();
+			ExecutionLoad[i].signalSemaphoreCount		= Submissions[i].SignalSemaphoreList.size();
+			ExecutionLoad[i].pSignalSemaphores			= Submissions[i].SignalSemaphoreList.data();
+		}
+
+		// Execute workload on the device.
+		return vkQueueSubmit(ExecutionQueue, ExecutionLoad.size(), ExecutionLoad.data(), aFence ? aFence->Handle : VK_NULL_HANDLE);
+	}
+
 
 }

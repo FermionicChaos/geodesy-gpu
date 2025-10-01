@@ -4,7 +4,6 @@
 #include "config.h"
 
 #include "resource.h"
-
 #include "command_buffer.h"
 
 namespace geodesy::gpu {
