@@ -12,7 +12,7 @@ namespace geodesy::gpu {
 	context::context(
 		std::shared_ptr<instance> 		aInstance,
 		std::shared_ptr<device> 		aDevice,
-		std::vector<unsigned int> 		aExecutionOperations,
+		std::vector<unsigned int> 		aOperations,
 		std::set<std::string> 			aLayers,
 		std::set<std::string> 			aExtensions,
 		void* 							aNext
@@ -25,9 +25,12 @@ namespace geodesy::gpu {
 		std::vector<int> QueueOffset(aDevice->QueueFamilyProperties.size(), 0);
 
 		// This builds the index map <qfi, qi> for each requested operation.
-		for (auto& Operation : aExecutionOperations) {
+		for (auto& Operation : aOperations) {
 			// Get list of sorted indices starting with qfis most similar to desired operations.
 			std::vector<int> SortedQueueFamilyIndices = aDevice->sort_queue_family_indices(Operation);
+			if (SortedQueueFamilyIndices.size() == 0) {
+				throw std::runtime_error("Device does not support requested operation.");
+			}
 
 			// For each ordered queue family index, check if there is a free queue index to use in family.
 			for (size_t i = 0; i < SortedQueueFamilyIndices.size(); i++) {

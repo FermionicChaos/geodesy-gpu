@@ -16,9 +16,9 @@ namespace geodesy::gpu {
 	}
 
 	instance::instance(
+		std::array<int, 3> 			aAPIVersion,
 		std::set<std::string> 		aLayers, 
 		std::set<std::string> 		aExtensions,
-		std::array<int, 3> 			aAPIVersion,
 		void* 						aNext,
 		std::string 				aAppName,
 		std::array<int, 3> 			aAppVersion,

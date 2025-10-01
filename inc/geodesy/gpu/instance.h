@@ -22,9 +22,9 @@ namespace geodesy::gpu {
 
 		instance();
 		instance(
-			std::set<std::string> 		aLayers, 
-			std::set<std::string> 		aExtensions,
-			std::array<int, 3> 			aAPIVersion = { 1, 0, 0 },
+			std::array<int, 3> 			aAPIVersion,
+			std::set<std::string> 		aLayers = {}, 
+			std::set<std::string> 		aExtensions = {},
 			void* 						aNext = NULL,
 			std::string 				aAppName = "",
 			std::array<int, 3> 			aAppVersion = { 1, 0, 0 },
@@ -43,8 +43,8 @@ namespace geodesy::gpu {
 		std::shared_ptr<gpu::context> create_context(
 			std::shared_ptr<device> 		aDevice,
 			std::vector<unsigned int> 		aExecutionOperations,
-			std::set<std::string> 			aLayers,
-			std::set<std::string> 			aExtensions,
+			std::set<std::string> 			aLayers = {},
+			std::set<std::string> 			aExtensions = {},
 			void* 							aNext = NULL
 		);
 

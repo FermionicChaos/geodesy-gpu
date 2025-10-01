@@ -24,9 +24,9 @@ namespace geodesy::gpu {
 		context(
 			std::shared_ptr<instance> 		aInstance,
 			std::shared_ptr<device> 		aDevice,
-			std::vector<unsigned int> 		aExecutionOperations,
-			std::set<std::string> 			aLayers,
-			std::set<std::string> 			aExtensions,
+			std::vector<unsigned int> 		aOperations,
+			std::set<std::string> 			aLayers = {},
+			std::set<std::string> 			aExtensions = {},
 			void* 							aNext = NULL
 		);
 		~context();
