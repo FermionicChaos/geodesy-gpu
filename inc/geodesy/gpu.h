@@ -4,4 +4,6 @@
 // Configuration for library
 #include "gpu/config.h"
 
+#include "gpu/instance.h"
+
 #endif // !GEODESY_GPU_H
