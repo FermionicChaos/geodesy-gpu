@@ -24,6 +24,7 @@ namespace geodesy {
 	}
 
 	namespace gpu {
+		class command_pool;
 		class context;
 		class instance;
 	}

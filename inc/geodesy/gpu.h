@@ -7,6 +7,8 @@
 #include "gpu/device.h"
 #include "gpu/fence.h"
 #include "gpu/semaphore.h"
+#include "gpu/command_buffer.h"
+#include "gpu/command_pool.h"
 // Stuff goes here...
 #include "gpu/context.h"
 #include "gpu/instance.h"
