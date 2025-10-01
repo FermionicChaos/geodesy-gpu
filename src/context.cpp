@@ -109,7 +109,8 @@ namespace geodesy::gpu {
 	}
 
 	context::~context() {
-
+		// Finally destroy device.
+		vkDestroyDevice(this->Handle, NULL);
 	}
 
 	void* context::function_pointer(std::string aFunctionName) {

@@ -20,12 +20,12 @@ namespace geodesy::gpu {
 	public:
 
 		// Insure that these objects outlive context.
-		std::shared_ptr<instance> 							Instance;
-		std::shared_ptr<device> 							Device;
+		std::shared_ptr<instance> 								Instance;
+		std::shared_ptr<device> 								Device;
 
-		std::map<unsigned int, std::pair<int, int>> 		IndexMap;
-		std::map<unsigned int, VkQueue> 					Queue;
-		VkDevice 											Handle;
+		std::map<unsigned int, std::pair<int, int>> 			IndexMap;
+		std::map<unsigned int, VkQueue> 						Queue;
+		VkDevice 												Handle;
 
 		context();
 		context(
