@@ -9,7 +9,7 @@ namespace geodesy::gpu {
 	public:
 
 		// Device Memory Types
-		enum memory {
+		enum memory : unsigned int {
 			DEVICE_LOCAL 				= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			HOST_VISIBLE 				= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
 			HOST_COHERENT 				= VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -22,7 +22,7 @@ namespace geodesy::gpu {
 		};
 
 		// Device Executable Operations
-		enum operation {
+		enum operation : unsigned int {
 			GRAPHICS 					= VK_QUEUE_GRAPHICS_BIT,
 			COMPUTE 					= VK_QUEUE_COMPUTE_BIT,
 			TRANSFER 					= VK_QUEUE_TRANSFER_BIT,
@@ -45,6 +45,8 @@ namespace geodesy::gpu {
 		device();
 		device(instance* aInstance, VkPhysicalDevice aPhysicalDevice);
 		~device();
+
+		std::vector<int> sort_queue_family_indices(unsigned int aDesiredOperations) const;
 
 	};
 

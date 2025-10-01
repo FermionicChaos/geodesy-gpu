@@ -6,6 +6,7 @@
 #include <array>
 #include <vector>
 #include <set>
+#include <map>
 #include <memory>
 
 #include <vulkan/vulkan.h>

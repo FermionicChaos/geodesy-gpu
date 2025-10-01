@@ -12,23 +12,30 @@ namespace geodesy::gpu {
 	class context : public std::enable_shared_from_this<context> {
 	public:
 
-		std::shared_ptr<instance> 		Instance;
-		std::shared_ptr<device> 		Device;
+		// Insure that these objects outlive context.
+		std::shared_ptr<instance> 							Instance;
+		std::shared_ptr<device> 							Device;
 
-		VkDevice 						Handle;
+		std::map<unsigned int, std::pair<int, int>> 		IndexMap;
+		std::map<unsigned int, VkQueue> 					Queue;
+		VkDevice 											Handle;
 
 		context();
 		context(
-			std::shared_ptr<instance> 	aInstance,
-			std::shared_ptr<device> 	aDevice,
-			std::vector<int> 			aExecutionOperations,
-			std::set<std::string> 		aLayers,
-			std::set<std::string> 		aExtensions,
-			void* 						aNext = NULL
+			std::shared_ptr<instance> 		aInstance,
+			std::shared_ptr<device> 		aDevice,
+			std::vector<unsigned int> 		aExecutionOperations,
+			std::set<std::string> 			aLayers,
+			std::set<std::string> 			aExtensions,
+			void* 							aNext = NULL
 		);
 		~context();
 
+		void* function_pointer(std::string aFunctionName);
+
 	private:
+
+		PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr;
 
 	};
 

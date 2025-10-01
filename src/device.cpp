@@ -1,4 +1,5 @@
 #include <geodesy/gpu/device.h>
+#include <algorithm>
 
 namespace geodesy::gpu {
 
@@ -55,6 +56,38 @@ namespace geodesy::gpu {
 		}
 	}
 	
-	device::~device() {}	
+	device::~device() {}
+
+	std::vector<int> device::sort_queue_family_indices(unsigned int aDesiredOperations) const {
+		std::vector<std::pair<size_t, int>> candidates; // <operation_count, family_index>
+		
+		// Collect compatible queue families with their operation counts
+		for (size_t i = 0; i < QueueFamilyProperties.size(); i++) {
+			const VkQueueFlags queue_flags = QueueFamilyProperties[i].queueFlags;
+			
+			// Check if this family supports all desired operations
+			if ((queue_flags & aDesiredOperations) == aDesiredOperations) {
+				// Count total operations supported by this queue family
+				size_t operation_count = 0;
+				for (unsigned int op = 1; op != 0; op <<= 1) {
+					if (queue_flags & op) operation_count++;
+				}
+				
+				candidates.push_back(std::make_pair(operation_count, static_cast<int>(i)));
+			}
+		}
+		
+		// Sort by operation count (ascending - most specific first)
+		std::sort(candidates.begin(), candidates.end());
+		
+		// Extract sorted indices
+		std::vector<int> sorted_indices;
+		sorted_indices.reserve(candidates.size());
+		for (const auto& candidate : candidates) {
+			sorted_indices.push_back(candidate.second);
+		}
+		
+		return sorted_indices;
+	}
 
 }
