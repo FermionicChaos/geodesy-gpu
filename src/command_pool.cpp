@@ -8,14 +8,15 @@ namespace geodesy::gpu {
 		this->Handle = VK_NULL_HANDLE;
 	}
 
-	command_pool::command_pool(std::shared_ptr<context> aContext, uint32_t aQueueFamilyIndex, VkCommandPoolCreateFlags aFlags) : command_pool() {
+	command_pool::command_pool(std::shared_ptr<context> aContext, unsigned int aOperation, VkCommandPoolCreateFlags aFlags) : command_pool() {
 		this->Context = aContext;
 
+		context::queue Q = aContext->get_execution_queue(aOperation);
 		VkCommandPoolCreateInfo CPCI = {};
 		CPCI.sType						= VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		CPCI.pNext						= NULL;
 		CPCI.flags						= aFlags;
-		CPCI.queueFamilyIndex			= aQueueFamilyIndex;
+		CPCI.queueFamilyIndex			= Q.FamilyIndex;
 
 		VkResult Result = vkCreateCommandPool(aContext->Handle, &CPCI, NULL, &this->Handle);
 		if (Result != VK_SUCCESS) {
@@ -34,7 +35,7 @@ namespace geodesy::gpu {
 		return nullptr;
 	}
 	
-	std::vector<std::shared_ptr<command_buffer>> command_pool::allocate_command_buffer(size_t aCount, VkCommandBufferLevel aLevel) {
+	std::vector<std::shared_ptr<command_buffer>> command_pool::allocate_command_buffers(size_t aCount, VkCommandBufferLevel aLevel) {
 		VkResult Result = VK_SUCCESS;
 		std::vector<std::shared_ptr<command_buffer>> CommandBuffers;
 		std::vector<VkCommandBuffer> CB(aCount, VK_NULL_HANDLE);

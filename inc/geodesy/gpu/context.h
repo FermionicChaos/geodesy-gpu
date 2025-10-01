@@ -19,12 +19,17 @@ namespace geodesy::gpu {
 	class context : public std::enable_shared_from_this<context> {
 	public:
 
+		struct queue {
+			int 		FamilyIndex;
+			int 		Index;
+			VkQueue 	Handle;
+		};
+
 		// Insure that these objects outlive context.
 		std::shared_ptr<instance> 								Instance;
 		std::shared_ptr<device> 								Device;
-
-		std::map<unsigned int, std::pair<int, int>> 			IndexMap;
-		std::map<unsigned int, VkQueue> 						Queue;
+		
+		std::map<unsigned int, queue> 							Queue;
 		VkDevice 												Handle;
 
 		context();
@@ -40,9 +45,35 @@ namespace geodesy::gpu {
 
 		void* function_pointer(std::string aFunctionName);
 
+		// Memory Allocation Tools
+		VkMemoryRequirements get_buffer_memory_requirements(VkBuffer aBufferHandle) const;
+		VkMemoryRequirements get_image_memory_requirements(VkImage aImageHandle) const;
+		VkDeviceMemory allocate_memory(VkMemoryRequirements aMemoryRequirements, unsigned int aMemoryType, void* aNext = NULL);
+		void free_memory(VkDeviceMemory& aMemoryHandle);
+
+		queue get_execution_queue(unsigned int aOperation);
+
+		// Wait on device to become idle.
+		VkResult wait();
+		// Wait on specific queue to become idle.
+		VkResult wait(device::operation aDeviceOperation);
+		// Wait on specific fence to become signaled.
+		VkResult wait(std::shared_ptr<fence> aFence);
+		VkResult wait(std::vector<std::shared_ptr<fence>> aFenceList, VkBool32 aWaitOnAll = VK_TRUE);
+
+		VkResult reset(std::shared_ptr<fence> aFence);
+		VkResult reset(std::vector<std::shared_ptr<fence>> aFenceList);
+
+		VkResult wait_and_reset(std::shared_ptr<fence> aFence);
+		VkResult wait_and_reset(std::vector<std::shared_ptr<fence>> aFenceList, VkBool32 aWaitOnAll = VK_TRUE);
+
 		VkResult execute(device::operation aDeviceOperation, std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<fence> aFence = nullptr);
 		VkResult execute(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_buffer>> aCommandBufferList, std::shared_ptr<fence> aFence = nullptr);
 		VkResult execute(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_batch>> aCommandBatchList, std::shared_ptr<fence> aFence = nullptr);
+
+		VkResult execute_and_wait(device::operation aDeviceOperation, std::shared_ptr<command_buffer> aCommandBuffer);
+		VkResult execute_and_wait(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_buffer>> aCommandBufferList);
+		VkResult execute_and_wait(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_batch>> aCommandBatchList);
 
 		// Generic resource creation with variadic template arguments
 		template<typename T, typename... Args>

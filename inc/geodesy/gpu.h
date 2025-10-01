@@ -24,8 +24,8 @@
 //      - A resource can be a buffer, an image, a shader, or a pipeline.
 // GPU Resources are hard data such as vertex buffers, index buffers, uniform buffers,
 // textures, and image outputs for rendering.
-// #include "gpu/buffer.h"
-// #include "gpu/image.h"
+#include "gpu/buffer.h"
+#include "gpu/image.h"
 // #include "gpu/shader.h" // Not Actually GPU Resource, no context required for creation.
 // #include "gpu/pipeline.h"
 // ----- GPU Metaresources ----- //

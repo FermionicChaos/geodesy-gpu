@@ -58,6 +58,35 @@ namespace geodesy::gpu {
 	
 	device::~device() {}
 
+	int device::get_memory_type_index(VkMemoryRequirements aMemoryRequirements, unsigned int aMemoryType) const {
+		int MemoryTypeIndex = -1;
+
+		// Search for exact memory type index.
+		for (uint32_t i = 0; i < MemoryProperties.memoryTypeCount; i++) {
+			if (((aMemoryRequirements.memoryTypeBits & (1 << i)) >> i) && (MemoryProperties.memoryTypes[i].propertyFlags == aMemoryType)) {
+				MemoryTypeIndex = i;
+				break;
+			}
+		}
+
+		// Search for approximate memory type index.
+		if (MemoryTypeIndex == -1) {
+			for (uint32_t i = 0; i < MemoryProperties.memoryTypeCount; i++) {
+				if (((aMemoryRequirements.memoryTypeBits & (1 << i)) >> i) && ((MemoryProperties.memoryTypes[i].propertyFlags & aMemoryType) == aMemoryType)) {
+					MemoryTypeIndex = i;
+					break;
+				}
+			}
+		}
+
+		return MemoryTypeIndex;
+	}
+
+	int device::get_memory_type(int aMemoryTypeIndex) {
+		if (aMemoryTypeIndex < 0) return 0;
+		return MemoryProperties.memoryTypes[aMemoryTypeIndex].propertyFlags;
+	}
+
 	std::vector<int> device::sort_queue_family_indices(unsigned int aDesiredOperations) const {
 		std::vector<std::pair<size_t, int>> candidates; // <operation_count, family_index>
 		
