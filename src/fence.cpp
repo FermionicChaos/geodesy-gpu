@@ -5,7 +5,6 @@
 namespace geodesy::gpu {
 
 	fence::fence() {
-		this->Context = nullptr;
 		this->Handle = VK_NULL_HANDLE;
 	}
 

@@ -14,6 +14,8 @@ namespace geodesy::gpu {
 
 		VkCommandPool                   Handle;
 
+		command_pool();
+		command_pool(std::shared_ptr<context> aContext, uint32_t aQueueFamilyIndex, VkCommandPoolCreateFlags aFlags = 0);
 		~command_pool();
 
 		std::shared_ptr<command_buffer> allocate_command_buffer(VkCommandBufferLevel aLevel = VK_COMMAND_BUFFER_LEVEL_PRIMARY);

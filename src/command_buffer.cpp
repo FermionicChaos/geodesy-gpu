@@ -7,7 +7,6 @@
 namespace geodesy::gpu {
 
 	command_buffer::command_buffer() {
-		this->Context = nullptr;
 		this->CommandPool = nullptr;
 		this->Handle = VK_NULL_HANDLE;
 	}

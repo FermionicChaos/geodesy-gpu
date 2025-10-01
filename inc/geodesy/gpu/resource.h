@@ -10,6 +10,8 @@ namespace geodesy::gpu {
 
         std::shared_ptr<context>        Context;
         
+        resource();
+        
     };
 
 }
