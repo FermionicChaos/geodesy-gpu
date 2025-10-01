@@ -1,0 +1,6 @@
+#ifndef GEODESY_GPU_CONFIG_H
+#define GEODESY_GPU_CONFIG_H
+
+
+
+#endif // !GEODESY_GPU_CONFIG_H
