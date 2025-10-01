@@ -3,9 +3,11 @@
 
 #include "config.h"
 
+#include "device.h"
+
 namespace geodesy::gpu {
 
-	class instance {
+	class instance : public std::enable_shared_from_this<instance> {
 	public:
 
 		static std::set<std::string> SupportedLayers;
@@ -28,9 +30,14 @@ namespace geodesy::gpu {
 		);
 		~instance();
 
+		void* function_pointer(std::string aFunctionName);
+
+		std::vector<std::shared_ptr<gpu::device>> get_devices();
+
 	private:
 
 		PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
+		std::vector<std::shared_ptr<gpu::device>> Device;
 
 	};
 

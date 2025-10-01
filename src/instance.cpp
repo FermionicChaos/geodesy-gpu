@@ -58,11 +58,33 @@ namespace geodesy::gpu {
 		if (Result != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create Vulkan instance.");
 		}
+
+		uint32_t PhysicalDeviceCount = 0;
+		Result = vkEnumeratePhysicalDevices(this->Handle, &PhysicalDeviceCount, NULL);
+		if (PhysicalDeviceCount > 0) {
+			std::vector<VkPhysicalDevice> PhysicalDeviceList(PhysicalDeviceCount);
+			Result = vkEnumeratePhysicalDevices(this->Handle, &PhysicalDeviceCount, PhysicalDeviceList.data());
+			if (Result != VK_SUCCESS) {
+				throw std::runtime_error("Failed to enumerate Vulkan physical devices.");
+			}
+
+			// Create device list.
+			for (const auto& PhysicalDevice : PhysicalDeviceList) {
+				auto NewDevice = geodesy::make<gpu::device>(this, PhysicalDevice);
+				if (NewDevice) {
+					this->Device.push_back(NewDevice);
+				}
+			}
+		}
 	}
 	
 	instance::~instance() {
 		vkDestroyInstance(this->Handle, NULL);
 		this->Handle = VK_NULL_HANDLE;
+	}
+
+	void* instance::function_pointer(std::string aFunctionName) {
+		return vkGetInstanceProcAddr(this->Handle, aFunctionName.c_str());
 	}
 	
 }
