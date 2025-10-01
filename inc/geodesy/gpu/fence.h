@@ -12,6 +12,7 @@ namespace geodesy::gpu {
 
 		VkFence Handle;
 
+		fence();
 		fence(std::shared_ptr<context> aContext, bool aSignaled = false);
 		~fence();
 

@@ -10,6 +10,8 @@ namespace geodesy::gpu {
 	}
 
 	semaphore::semaphore(std::shared_ptr<context> aContext) : semaphore() {
+		this->Context = aContext;
+
 		VkSemaphoreCreateInfo SCI = {};
 		SCI.sType						= VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		SCI.pNext						= NULL;
