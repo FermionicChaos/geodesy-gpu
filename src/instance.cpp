@@ -91,5 +91,22 @@ namespace geodesy::gpu {
 	std::vector<std::shared_ptr<gpu::device>> instance::get_devices() {
 		return this->Device;
 	}
+
+	std::shared_ptr<gpu::context> instance::create_context(
+		std::shared_ptr<device> 		aDevice,
+		std::vector<unsigned int> 		aExecutionOperations,
+		std::set<std::string> 			aLayers,
+		std::set<std::string> 			aExtensions,
+		void* 							aNext
+	) {
+		return geodesy::make<gpu::context>(
+			this->shared_from_this(),
+			aDevice,
+			aExecutionOperations,
+			aLayers,
+			aExtensions,
+			aNext
+		);
+	}
 	
 }

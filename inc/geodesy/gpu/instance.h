@@ -5,6 +5,8 @@
 
 #include "device.h"
 
+#include "context.h"
+
 namespace geodesy::gpu {
 
 	class instance : public std::enable_shared_from_this<instance> {
@@ -31,9 +33,20 @@ namespace geodesy::gpu {
 		);
 		~instance();
 
+		// Load additional function pointer from instance.
 		void* function_pointer(std::string aFunctionName);
 
+		// Get devices available on system.
 		std::vector<std::shared_ptr<gpu::device>> get_devices();
+
+		// Create a device context.
+		std::shared_ptr<gpu::context> create_context(
+			std::shared_ptr<device> 		aDevice,
+			std::vector<unsigned int> 		aExecutionOperations,
+			std::set<std::string> 			aLayers,
+			std::set<std::string> 			aExtensions,
+			void* 							aNext = NULL
+		);
 
 	private:
 

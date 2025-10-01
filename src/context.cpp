@@ -3,7 +3,10 @@
 namespace geodesy::gpu {
 
 	context::context() {
-
+		this->Instance = nullptr;
+		this->Device = nullptr;
+		this->Handle = VK_NULL_HANDLE;
+		this->vkGetDeviceProcAddr = NULL;
 	}
 
 	context::context(
@@ -86,6 +89,12 @@ namespace geodesy::gpu {
 		Result = vkCreateDevice(Device->Handle, &DCI, NULL, &this->Handle);
 		if (Result != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create context.");
+		}
+
+		// Post creation, load queue handles.
+		for (const auto& [Op, ij] : IndexMap) {
+			this->Queue[Op] = VK_NULL_HANDLE;
+			vkGetDeviceQueue(this->Handle, ij.first, ij.second, &this->Queue[Op]);
 		}
 	}
 
