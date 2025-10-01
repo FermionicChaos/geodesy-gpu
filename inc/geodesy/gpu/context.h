@@ -35,27 +35,15 @@ namespace geodesy::gpu {
 
 		void* function_pointer(std::string aFunctionName);
 
+		// VkResult execute(device::operation aDeviceOperation, const std::shared_ptr<command_buffer>& aCommandBuffer, VkFence aFence = VK_NULL_HANDLE);
+		// VkResult execute(device::operation aDeviceOperation, const std::shared_ptr<command_batch>& aSubmission, VkFence aFence = VK_NULL_HANDLE);
+		// VkResult execute(device::operation aDeviceOperation, const std::vector<std::shared_ptr<command_batch>>& aSubmissionList, VkFence aFence = VK_NULL_HANDLE);
+
 		// Generic resource creation with variadic template arguments
 		template<typename T, typename... Args>
 		std::shared_ptr<T> create(Args&&... args) {
 			return geodesy::make<T>(this->shared_from_this(), std::forward<Args>(args)...);
 		}
-
-		// // Create multiple resources of the same type
-		// template<typename T, typename... Args>
-		// std::vector<std::shared_ptr<T>> create_multiple(size_t count, Args&&... args) {
-		// 	std::vector<std::shared_ptr<T>> resources;
-		// 	resources.reserve(count);
-			
-		// 	for (size_t i = 0; i < count; i++) {
-		// 		auto resource = create<T>(std::forward<Args>(args)...);
-		// 		if (resource) {
-		// 			resources.push_back(resource);
-		// 		}
-		// 	}
-			
-		// 	return resources;
-		// }
 
 	private:
 

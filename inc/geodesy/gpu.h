@@ -8,8 +8,10 @@
 #include "gpu/resource.h"
 #include "gpu/fence.h"
 #include "gpu/semaphore.h"
+#include "gpu/semaphore_pool.h"
 #include "gpu/command_buffer.h"
 #include "gpu/command_pool.h"
+#include "gpu/command_batch.h"
 // Stuff goes here...
 #include "gpu/context.h"
 #include "gpu/instance.h"
