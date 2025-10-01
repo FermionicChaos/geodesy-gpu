@@ -35,17 +35,26 @@ namespace geodesy::gpu {
 
 		void* function_pointer(std::string aFunctionName);
 
-		// template<typename T>
-		// std::vector<std::shared_ptr<T>> create_resource(size_t aCount) {
-		// 	std::vector<std::shared_ptr<T>> Resources;
-		// 	for (size_t i = 0; i < aCount; i++) {
-		// 		std::shared_ptr<T> NewResource;
-		// 		NewResource = geodesy::make<T>(this->shared_from_this());
-		// 		if (NewResource) {
-		// 			Resources.push_back(NewResource);
+		// Generic resource creation with variadic template arguments
+		template<typename T, typename... Args>
+		std::shared_ptr<T> create(Args&&... args) {
+			return geodesy::make<T>(this->shared_from_this(), std::forward<Args>(args)...);
+		}
+
+		// // Create multiple resources of the same type
+		// template<typename T, typename... Args>
+		// std::vector<std::shared_ptr<T>> create_multiple(size_t count, Args&&... args) {
+		// 	std::vector<std::shared_ptr<T>> resources;
+		// 	resources.reserve(count);
+			
+		// 	for (size_t i = 0; i < count; i++) {
+		// 		auto resource = create<T>(std::forward<Args>(args)...);
+		// 		if (resource) {
+		// 			resources.push_back(resource);
 		// 		}
 		// 	}
-		// 	return Resources;
+			
+		// 	return resources;
 		// }
 
 	private:

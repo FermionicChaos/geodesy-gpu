@@ -22,7 +22,7 @@ namespace geodesy::gpu {
 			throw std::runtime_error("Failed to create command pool.");
 		}
 	}
-		
+
 	command_pool::~command_pool() {
 		// It is automatically assumed that Context and Handle are valid.
 		// Because every command buffer has a shared copy of the command pool,
@@ -47,7 +47,7 @@ namespace geodesy::gpu {
 		Result = vkAllocateCommandBuffers(this->Context->Handle, &CBAI, CB.data());
 		if (Result == VK_SUCCESS) {
 			for (auto& buffer : CB) {
-				CommandBuffers.push_back(std::make_shared<command_buffer>(this->Context, this->shared_from_this(), buffer));
+				CommandBuffers.push_back(geodesy::make<command_buffer>(this->Context, this->shared_from_this(), buffer));
 			}
 		}
 		return CommandBuffers;
