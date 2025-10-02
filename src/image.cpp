@@ -16,6 +16,7 @@
 
 #include "glslang_util.h"
 
+#include <geodesy/gpu/pipeline.h>
 #include <geodesy/gpu/context.h>
 
 // #define STB_IMAGE_IMPLEMENTATION
@@ -1135,7 +1136,7 @@ namespace geodesy::gpu {
 		// Record Command Buffer
 		Result = CommandBuffer->begin();
 		vkCmdPipelineBarrier(
-			CommandBuffer, 
+			CommandBuffer->Handle, 
 			pipeline::stage::BOTTOM_OF_PIPE, pipeline::stage::TOP_OF_PIPE, 
 			0,
 			0, NULL,

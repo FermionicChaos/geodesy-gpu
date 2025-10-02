@@ -14,8 +14,14 @@
 // Vulkan API
 #include <vulkan/vulkan.h>
 
-// GLSLang API
-#include <glslang/Public/ShaderLang.h>
+// TODO: GLSLang API (Conflict with Vulkan SDK, find fix later)
+// #include <glslang/Public/ShaderLang.h>
+
+namespace glslang {
+	class TShader;
+	class TProgram;
+	class TObjectReflection;
+}
 
 namespace geodesy {
 
