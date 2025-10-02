@@ -11,7 +11,11 @@
 #include <map>
 #include <memory>
 
+// Vulkan API
 #include <vulkan/vulkan.h>
+
+// GLSLang API
+#include <glslang/Public/ShaderLang.h>
 
 namespace geodesy {
 
@@ -27,6 +31,7 @@ namespace geodesy {
 
 	namespace gpu {
 		class command_pool;
+		class pipeline;
 		class context;
 		class instance;
 	}

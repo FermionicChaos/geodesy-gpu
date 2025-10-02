@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GEODESY_CORE_GPU_BUFFER_H
-#define GEODESY_CORE_GPU_BUFFER_H
+#ifndef GEODESY_GPU_BUFFER_H
+#define GEODESY_GPU_BUFFER_H
 
 /*
 * Usage:
@@ -134,4 +134,4 @@ namespace geodesy::gpu {
 
 }
 
-#endif // !GEODESY_CORE_GPU_BUFFER_H
+#endif // !GEODESY_GPU_BUFFER_H

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef GEODESY_CORE_GPU_IMAGE_H
-#define GEODESY_CORE_GPU_IMAGE_H
+#ifndef GEODESY_GPU_IMAGE_H
+#define GEODESY_GPU_IMAGE_H
 
 #include "config.h"
 
@@ -367,6 +367,7 @@ namespace geodesy::gpu {
 		static size_t bits_per_pixel(int aFormat);
 		static size_t channel_count(int aFormat);
 		static VkImageAspectFlags aspect_flag(int aFormat);
+		static VkFormat glsl_to_format(const glslang::TObjectReflection& aVariable);
 
 		// TODO: Macro out when asset system is available.
 		size_t 											HostSize;
@@ -466,4 +467,4 @@ namespace geodesy::gpu {
 
 }
 
-#endif // !GEODESY_CORE_GPU_IMAGE_H
+#endif // !GEODESY_GPU_IMAGE_H

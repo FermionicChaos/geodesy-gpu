@@ -14,6 +14,8 @@
 #include <vector>
 #include <algorithm>
 
+#include "glslang_util.h"
+
 #include <geodesy/gpu/context.h>
 
 // #define STB_IMAGE_IMPLEMENTATION
@@ -656,6 +658,126 @@ namespace geodesy::gpu {
 			break;
 		}
 		return AspectFlag;
+	}
+
+	VkFormat image::glsl_to_format(const glslang::TObjectReflection& aVariable) {
+		const glslang::TType* Type = aVariable.getType();
+		glslang::TBasicType basicType = Type->getBasicType();
+		int vectorSize = Type->getVectorSize();
+		switch (basicType) {
+		case glslang::EbtFloat:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R32_SFLOAT;
+			case 2: return VK_FORMAT_R32G32_SFLOAT;
+			case 3: return VK_FORMAT_R32G32B32_SFLOAT;
+			case 4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+			default: return VK_FORMAT_R32G32B32A32_SFLOAT;
+			}
+			
+		case glslang::EbtDouble:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R64_SFLOAT;
+			case 2: return VK_FORMAT_R64G64_SFLOAT;
+			case 3: return VK_FORMAT_R64G64B64_SFLOAT;
+			case 4: return VK_FORMAT_R64G64B64A64_SFLOAT;
+			default: return VK_FORMAT_R64G64B64A64_SFLOAT;
+			}
+			
+		case glslang::EbtInt:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R32_SINT;
+			case 2: return VK_FORMAT_R32G32_SINT;
+			case 3: return VK_FORMAT_R32G32B32_SINT;
+			case 4: return VK_FORMAT_R32G32B32A32_SINT;
+			default: return VK_FORMAT_R32G32B32A32_SINT;
+			}
+			
+		case glslang::EbtUint:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R32_UINT;
+			case 2: return VK_FORMAT_R32G32_UINT;
+			case 3: return VK_FORMAT_R32G32B32_UINT;
+			case 4: return VK_FORMAT_R32G32B32A32_UINT;
+			default: return VK_FORMAT_R32G32B32A32_UINT;
+			}
+			
+		case glslang::EbtInt16:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R16_SINT;
+			case 2: return VK_FORMAT_R16G16_SINT;
+			case 3: return VK_FORMAT_R16G16B16_SINT;
+			case 4: return VK_FORMAT_R16G16B16A16_SINT;
+			default: return VK_FORMAT_R16G16B16A16_SINT;
+			}
+			
+		case glslang::EbtUint16:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R16_UINT;
+			case 2: return VK_FORMAT_R16G16_UINT;
+			case 3: return VK_FORMAT_R16G16B16_UINT;
+			case 4: return VK_FORMAT_R16G16B16A16_UINT;
+			default: return VK_FORMAT_R16G16B16A16_UINT;
+			}
+			
+		case glslang::EbtInt8:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R8_SINT;
+			case 2: return VK_FORMAT_R8G8_SINT;
+			case 3: return VK_FORMAT_R8G8B8_SINT;
+			case 4: return VK_FORMAT_R8G8B8A8_SINT;
+			default: return VK_FORMAT_R8G8B8A8_SINT;
+			}
+			
+		case glslang::EbtUint8:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R8_UINT;
+			case 2: return VK_FORMAT_R8G8_UINT;
+			case 3: return VK_FORMAT_R8G8B8_UINT;
+			case 4: return VK_FORMAT_R8G8B8A8_UINT;
+			default: return VK_FORMAT_R8G8B8A8_UINT;
+			}
+			
+		case glslang::EbtFloat16:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R16_SFLOAT;
+			case 2: return VK_FORMAT_R16G16_SFLOAT;
+			case 3: return VK_FORMAT_R16G16B16_SFLOAT;
+			case 4: return VK_FORMAT_R16G16B16A16_SFLOAT;
+			default: return VK_FORMAT_R16G16B16A16_SFLOAT;
+			}
+			
+		case glslang::EbtBool:
+			switch (vectorSize) {
+			case 1: return VK_FORMAT_R8_UINT;
+			case 2: return VK_FORMAT_R8G8_UINT;
+			case 3: return VK_FORMAT_R8G8B8_UINT;
+			case 4: return VK_FORMAT_R8G8B8A8_UINT;
+			default: return VK_FORMAT_R8G8B8A8_UINT;
+			}
+			
+		case glslang::EbtSampler:
+			// For samplers, return a common texture format
+			// The actual format depends on the sampled image
+			switch (Type->getSampler().type) {
+			case glslang::EbtFloat:
+				return VK_FORMAT_R8G8B8A8_UNORM;
+			case glslang::EbtInt:
+				return VK_FORMAT_R8G8B8A8_SINT;
+			case glslang::EbtUint:
+				return VK_FORMAT_R8G8B8A8_UINT;
+			default:
+				return VK_FORMAT_R8G8B8A8_UNORM;
+			}
+			
+		// Matrix types - typically stored as arrays of vectors
+		case glslang::EbtStruct:
+			// For struct types, return a generic format
+			return VK_FORMAT_R8G8B8A8_UNORM;
+			
+		default:
+			// Unknown or unsupported type
+			return VK_FORMAT_UNDEFINED;
+		}
 	}
 
 	image::image() {

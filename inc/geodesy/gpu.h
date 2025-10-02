@@ -26,8 +26,7 @@
 // textures, and image outputs for rendering.
 #include "gpu/buffer.h"
 #include "gpu/image.h"
-// #include "gpu/shader.h" // Not Actually GPU Resource, no context required for creation.
-// #include "gpu/pipeline.h"
+#include "gpu/shader.h" // Not Actually GPU Resource, no context required for creation.
 // ----- GPU Metaresources ----- //
 // Explanation of meta resources:
 //      - A Descriptor Set is a reference of gpu buffers & images.
@@ -36,10 +35,9 @@
 // Metaresources are references to other gpu resources in existence. Their lifetime is bound
 // to the life times of the objects they were created with. They must always be cleared before
 // the objects they reference are destroyed.
-// #include "gpu/descriptor.h"
-// #include "gpu/framebuffer.h"
-// #include "gpu/acceleration_structure.h"
-// Stuff goes here...
+#include "gpu/descriptor.h"
+#include "gpu/framebuffer.h"
+#include "gpu/pipeline.h"
 #include "gpu/context.h"
 #include "gpu/instance.h"
 

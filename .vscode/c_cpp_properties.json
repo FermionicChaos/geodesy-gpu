@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "C:/Program Files/VulkanSDK/include/**",
-                ""
+                "",
+                "C:/Users/caffeinated/Sauce/repos/bored2/dep"
             ],
             "defines": [
                 "_DEBUG",

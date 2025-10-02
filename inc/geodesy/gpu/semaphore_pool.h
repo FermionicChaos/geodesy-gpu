@@ -27,4 +27,4 @@ namespace geodesy::gpu {
 	};
 }
 
-#endif // !GEODESY_CORE_GPU_SEMAPHORE_POOL_H
+#endif // !GEODESY_GPU_SEMAPHORE_POOL_H
