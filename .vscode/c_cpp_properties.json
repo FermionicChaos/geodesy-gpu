@@ -4,6 +4,9 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/inc/",
+                "${workspaceFolder}/../vulkan-headers-src/include/",
+                "${workspaceFolder}/../",
+                "${workspaceFolder}/../geodesy-gpu-src/inc/",
                 ""
             ],
             "defines": [
