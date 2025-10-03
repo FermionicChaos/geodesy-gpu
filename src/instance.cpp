@@ -29,9 +29,8 @@ namespace geodesy::gpu {
 		// Determine if loading function has been provided or not. If yes, use it to access all other vulkan functions.
 		this->vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)avkGetInstanceProcAddr;// ? (PFN_vkGetInstanceProcAddr)avkGetInstanceProcAddr : ::vkGetInstanceProcAddr;
 		
-		// Load necessary function pointers onto stack.
+		// Load necessary function pointers onto stack. This is the only function that can be loaded without an instance.
 		PFN_vkCreateInstance vkCreateInstance = (PFN_vkCreateInstance)this->function_pointer("vkCreateInstance");
-		PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices = (PFN_vkEnumeratePhysicalDevices)this->function_pointer("vkEnumeratePhysicalDevices");
 
 		std::vector<const char*> LayerList;
 		for (const auto& Layer : aLayers) {
@@ -66,6 +65,9 @@ namespace geodesy::gpu {
 		if (Result != VK_SUCCESS) {
 			throw std::runtime_error("Failed to create Vulkan instance.");
 		}
+
+		// Enumerate physical devices post instance creation.
+		PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices = (PFN_vkEnumeratePhysicalDevices)this->function_pointer("vkEnumeratePhysicalDevices");
 
 		uint32_t PhysicalDeviceCount = 0;
 		Result = vkEnumeratePhysicalDevices(this->Handle, &PhysicalDeviceCount, NULL);

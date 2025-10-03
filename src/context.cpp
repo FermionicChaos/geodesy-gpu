@@ -26,8 +26,8 @@ namespace geodesy::gpu {
 		void* 							aNext
 	) : context() {
 		VkResult Result = VK_SUCCESS;
-		PFN_vkCreateDevice vkCreateDevice = (PFN_vkCreateDevice)this->Instance->function_pointer("vkCreateDevice");
-		PFN_vkGetDeviceQueue vkGetDeviceQueue = (PFN_vkGetDeviceQueue)this->Instance->function_pointer("vkGetDeviceQueue");
+		PFN_vkCreateDevice vkCreateDevice = (PFN_vkCreateDevice)aInstance->function_pointer("vkCreateDevice");
+		PFN_vkGetDeviceQueue vkGetDeviceQueue = (PFN_vkGetDeviceQueue)aInstance->function_pointer("vkGetDeviceQueue");
 
 		this->Instance = aInstance;
 		this->Device = aDevice;
