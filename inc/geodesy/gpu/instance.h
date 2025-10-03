@@ -22,6 +22,7 @@ namespace geodesy::gpu {
 
 		instance();
 		instance(
+			void* 						avkGetInstanceProcAddr,
 			std::array<int, 3> 			aAPIVersion,
 			std::set<std::string> 		aLayers = {}, 
 			std::set<std::string> 		aExtensions = {},

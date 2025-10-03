@@ -16,6 +16,7 @@ namespace geodesy::gpu {
 	}
 
 	instance::instance(
+		void* 						avkGetInstanceProcAddr,
 		std::array<int, 3> 			aAPIVersion,
 		std::set<std::string> 		aLayers, 
 		std::set<std::string> 		aExtensions,
@@ -25,6 +26,12 @@ namespace geodesy::gpu {
 		std::string 				aEngineName,
 		std::array<int, 3> 			aEngineVersion
 	) : instance() {
+		// Determine if loading function has been provided or not. If yes, use it to access all other vulkan functions.
+		this->vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)avkGetInstanceProcAddr ? (PFN_vkGetInstanceProcAddr)avkGetInstanceProcAddr : ::vkGetInstanceProcAddr;
+		
+		// Load necessary function pointers onto stack.
+		PFN_vkCreateInstance vkCreateInstance = (PFN_vkCreateInstance)this->function_pointer("vkCreateInstance");
+		PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices = (PFN_vkEnumeratePhysicalDevices)this->function_pointer("vkEnumeratePhysicalDevices");
 
 		std::vector<const char*> LayerList;
 		for (const auto& Layer : aLayers) {
@@ -80,6 +87,10 @@ namespace geodesy::gpu {
 	}
 	
 	instance::~instance() {
+		PFN_vkDestroyInstance vkDestroyInstance = (PFN_vkDestroyInstance)this->function_pointer("vkDestroyInstance");
+		// Destroy device objects first.
+		this->Device.clear();
+		// Then destroy instance.
 		vkDestroyInstance(this->Handle, NULL);
 		this->Handle = VK_NULL_HANDLE;
 	}
