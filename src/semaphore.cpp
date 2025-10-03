@@ -9,6 +9,7 @@ namespace geodesy::gpu {
 	}
 
 	semaphore::semaphore(std::shared_ptr<context> aContext) : semaphore() {
+		PFN_vkCreateSemaphore vkCreateSemaphore = (PFN_vkCreateSemaphore)aContext->function_pointer("vkCreateSemaphore");
 		this->Context = aContext;
 
 		VkSemaphoreCreateInfo SCI = {};
@@ -23,6 +24,7 @@ namespace geodesy::gpu {
 	}
 	
 	semaphore::~semaphore() {
+		PFN_vkDestroySemaphore vkDestroySemaphore = (PFN_vkDestroySemaphore)this->Context->function_pointer("vkDestroySemaphore");
 		// It is automatically assumed that Context and Handle are valid.
 		vkDestroySemaphore(this->Context->Handle, this->Handle, NULL);
 	}

@@ -9,6 +9,7 @@ namespace geodesy::gpu {
 	}
 
 	fence::fence(std::shared_ptr<context> aContext, bool aSignaled) : fence() {
+		PFN_vkCreateFence vkCreateFence = (PFN_vkCreateFence)aContext->function_pointer("vkCreateFence");
 		this->Context = aContext;
 		
 		VkFenceCreateInfo FCI = {};
@@ -23,6 +24,7 @@ namespace geodesy::gpu {
 	}
 
 	fence::~fence() {
+		PFN_vkDestroyFence vkDestroyFence = (PFN_vkDestroyFence)this->Context->function_pointer("vkDestroyFence");
 		// It is automatically assumed that Context and Handle are valid.
 		vkDestroyFence(this->Context->Handle, this->Handle, NULL);
 	}

@@ -27,7 +27,7 @@ namespace geodesy::gpu {
 		std::array<int, 3> 			aEngineVersion
 	) : instance() {
 		// Determine if loading function has been provided or not. If yes, use it to access all other vulkan functions.
-		this->vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)avkGetInstanceProcAddr ? (PFN_vkGetInstanceProcAddr)avkGetInstanceProcAddr : ::vkGetInstanceProcAddr;
+		this->vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)avkGetInstanceProcAddr;// ? (PFN_vkGetInstanceProcAddr)avkGetInstanceProcAddr : ::vkGetInstanceProcAddr;
 		
 		// Load necessary function pointers onto stack.
 		PFN_vkCreateInstance vkCreateInstance = (PFN_vkCreateInstance)this->function_pointer("vkCreateInstance");
@@ -95,7 +95,7 @@ namespace geodesy::gpu {
 		this->Handle = VK_NULL_HANDLE;
 	}
 
-	void* instance::function_pointer(std::string aFunctionName) {
+	void* instance::function_pointer(std::string aFunctionName) const {
 		return vkGetInstanceProcAddr(this->Handle, aFunctionName.c_str());
 	}
 	

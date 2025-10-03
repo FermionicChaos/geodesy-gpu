@@ -1,4 +1,5 @@
 #include <geodesy/gpu/context.h>
+#include <geodesy/gpu/instance.h>
 
 namespace geodesy::gpu {
 
@@ -25,6 +26,9 @@ namespace geodesy::gpu {
 		void* 							aNext
 	) : context() {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateDevice vkCreateDevice = (PFN_vkCreateDevice)this->Instance->function_pointer("vkCreateDevice");
+		PFN_vkGetDeviceQueue vkGetDeviceQueue = (PFN_vkGetDeviceQueue)this->Instance->function_pointer("vkGetDeviceQueue");
+
 		this->Instance = aInstance;
 		this->Device = aDevice;
 
@@ -108,22 +112,25 @@ namespace geodesy::gpu {
 	}
 
 	context::~context() {
+		PFN_vkDestroyDevice vkDestroyDevice = (PFN_vkDestroyDevice)this->function_pointer("vkDestroyDevice");
 		// Finally destroy device.
 		vkDestroyDevice(this->Handle, NULL);
 	}
 
-	void* context::function_pointer(std::string aFunctionName) {
+	void* context::function_pointer(std::string aFunctionName) const {
 		return vkGetDeviceProcAddr(this->Handle, aFunctionName.c_str());
 	}
 
 	VkMemoryRequirements context::get_buffer_memory_requirements(VkBuffer aBufferHandle) const {
 		VkMemoryRequirements MemoryRequirements;
+		PFN_vkGetBufferMemoryRequirements vkGetBufferMemoryRequirements = (PFN_vkGetBufferMemoryRequirements)this->function_pointer("vkGetBufferMemoryRequirements");
 		vkGetBufferMemoryRequirements(this->Handle, aBufferHandle, &MemoryRequirements);
 		return MemoryRequirements;
 	}
 
 	VkMemoryRequirements context::get_image_memory_requirements(VkImage aImageHandle) const {
 		VkMemoryRequirements MemoryRequirements;
+		PFN_vkGetImageMemoryRequirements vkGetImageMemoryRequirements = (PFN_vkGetImageMemoryRequirements)this->function_pointer("vkGetImageMemoryRequirements");
 		vkGetImageMemoryRequirements(this->Handle, aImageHandle, &MemoryRequirements);
 		return MemoryRequirements;
 	}
@@ -133,6 +140,7 @@ namespace geodesy::gpu {
 		VkResult Result = VK_SUCCESS;
 		VkDeviceMemory MemoryHandle = VK_NULL_HANDLE;
 		VkMemoryAllocateInfo AllocateInfo{};
+		PFN_vkAllocateMemory vkAllocateMemory 	= (PFN_vkAllocateMemory)this->function_pointer("vkAllocateMemory");
 		AllocateInfo.sType						= VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		AllocateInfo.pNext 						= aNext;
 		AllocateInfo.allocationSize				= aMemoryRequirements.size;
@@ -142,6 +150,7 @@ namespace geodesy::gpu {
 	}
 
 	void context::free_memory(VkDeviceMemory& aMemoryHandle) {
+		PFN_vkFreeMemory vkFreeMemory = (PFN_vkFreeMemory)this->function_pointer("vkFreeMemory");
 		vkFreeMemory(this->Handle, aMemoryHandle, NULL);
 		aMemoryHandle = VK_NULL_HANDLE;
 	}
@@ -165,10 +174,12 @@ namespace geodesy::gpu {
 	}
 
 	VkResult context::wait() {
+		PFN_vkDeviceWaitIdle vkDeviceWaitIdle = (PFN_vkDeviceWaitIdle)this->function_pointer("vkDeviceWaitIdle");
 		return vkDeviceWaitIdle(this->Handle);
 	}
 
 	VkResult context::wait(device::operation aDeviceOperation) {
+		PFN_vkQueueWaitIdle vkQueueWaitIdle = (PFN_vkQueueWaitIdle)this->function_pointer("vkQueueWaitIdle");
 		queue Q = this->get_execution_queue(aDeviceOperation);
 		if (Q.Handle != VK_NULL_HANDLE) {
 			return vkQueueWaitIdle(Q.Handle);
@@ -185,6 +196,7 @@ namespace geodesy::gpu {
 
 	VkResult context::wait(std::vector<std::shared_ptr<fence>> aFenceList, VkBool32 aWaitOnAll) {
 		std::vector<VkFence> FenceHandleList(aFenceList.size(), VK_NULL_HANDLE);
+		PFN_vkWaitForFences vkWaitForFences = (PFN_vkWaitForFences)this->function_pointer("vkWaitForFences");
 		for (size_t i = 0; i < aFenceList.size(); i++) {
 			FenceHandleList[i] = aFenceList[i]->Handle;
 		}
@@ -198,6 +210,7 @@ namespace geodesy::gpu {
 
 	VkResult context::reset(std::vector<std::shared_ptr<fence>> aFenceList) {
 		std::vector<VkFence> FenceHandleList(aFenceList.size(), VK_NULL_HANDLE);
+		PFN_vkResetFences vkResetFences = (PFN_vkResetFences)this->function_pointer("vkResetFences");
 		for (size_t i = 0; i < aFenceList.size(); i++) {
 			FenceHandleList[i] = aFenceList[i]->Handle;
 		}
@@ -226,6 +239,7 @@ namespace geodesy::gpu {
 	}
 
 	VkResult context::execute(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_batch>> aCommandBatchList, std::shared_ptr<fence> aFence) {
+		PFN_vkQueueSubmit vkQueueSubmit = (PFN_vkQueueSubmit)this->function_pointer("vkQueueSubmit");
 		// Check if there is any work to do.
 		if (aCommandBatchList.empty()) return VK_SUCCESS;
 

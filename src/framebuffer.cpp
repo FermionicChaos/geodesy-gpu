@@ -5,6 +5,7 @@
 namespace geodesy::gpu {
 
 	framebuffer::framebuffer(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, std::vector<std::shared_ptr<image>> aImageAttachements, std::array<unsigned int, 3> aResolution) {
+		PFN_vkCreateFramebuffer vkCreateFramebuffer = (PFN_vkCreateFramebuffer)aContext->function_pointer("vkCreateFramebuffer");
 		this->Context = aContext;
 		this->ClearValue = std::vector<VkClearValue>(aImageAttachements.size());
 		for (size_t i = 0; i < aImageAttachements.size(); i++) {
@@ -29,6 +30,7 @@ namespace geodesy::gpu {
 	}
 
 	framebuffer::framebuffer(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, std::map<std::string, std::shared_ptr<image>> aImage, std::vector<std::string> aAttachmentSelection, std::array<unsigned int, 3> aResolution) {
+		PFN_vkCreateFramebuffer vkCreateFramebuffer = (PFN_vkCreateFramebuffer)aContext->function_pointer("vkCreateFramebuffer");
 		this->Context = aContext;
 		this->ClearValue = std::vector<VkClearValue>(aAttachmentSelection.size());
 		for (size_t i = 0; i < aAttachmentSelection.size(); i++) {
@@ -53,9 +55,8 @@ namespace geodesy::gpu {
 	}
 
 	framebuffer::~framebuffer() {
-		if (this->Handle != VK_NULL_HANDLE) {
-			vkDestroyFramebuffer(this->Context->Handle, this->Handle, NULL);
-		}
+		PFN_vkDestroyFramebuffer vkDestroyFramebuffer = (PFN_vkDestroyFramebuffer)this->Context->function_pointer("vkDestroyFramebuffer");
+		vkDestroyFramebuffer(this->Context->Handle, this->Handle, NULL);
 	}
 
 }

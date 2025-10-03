@@ -43,7 +43,7 @@ namespace geodesy::gpu {
 		);
 		~context();
 
-		void* function_pointer(std::string aFunctionName);
+		void* function_pointer(std::string aFunctionName) const;
 
 		// Memory Allocation Tools
 		VkMemoryRequirements get_buffer_memory_requirements(VkBuffer aBufferHandle) const;

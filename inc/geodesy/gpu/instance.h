@@ -35,7 +35,7 @@ namespace geodesy::gpu {
 		~instance();
 
 		// Load additional function pointer from instance.
-		void* function_pointer(std::string aFunctionName);
+		void* function_pointer(std::string aFunctionName) const;
 
 		// Get devices available on system.
 		std::vector<std::shared_ptr<gpu::device>> get_devices();

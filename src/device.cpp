@@ -1,4 +1,6 @@
 #include <geodesy/gpu/device.h>
+#include <geodesy/gpu/instance.h>
+
 #include <algorithm>
 
 namespace geodesy::gpu {
@@ -15,6 +17,12 @@ namespace geodesy::gpu {
 	}
 	
 	device::device(instance* aInstance, VkPhysicalDevice aPhysicalDevice) {
+		// Load function pointers from instance onto stack.
+		PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties = (PFN_vkGetPhysicalDeviceProperties)aInstance->function_pointer("vkGetPhysicalDeviceProperties");
+		PFN_vkGetPhysicalDeviceMemoryProperties vkGetPhysicalDeviceMemoryProperties = (PFN_vkGetPhysicalDeviceMemoryProperties)aInstance->function_pointer("vkGetPhysicalDeviceMemoryProperties");
+		PFN_vkGetPhysicalDeviceQueueFamilyProperties vkGetPhysicalDeviceQueueFamilyProperties = (PFN_vkGetPhysicalDeviceQueueFamilyProperties)aInstance->function_pointer("vkGetPhysicalDeviceQueueFamilyProperties");
+		PFN_vkGetPhysicalDeviceFeatures vkGetPhysicalDeviceFeatures = (PFN_vkGetPhysicalDeviceFeatures)aInstance->function_pointer("vkGetPhysicalDeviceFeatures");
+		
 		this->Handle = aPhysicalDevice;
 
 		// Query Device Properties

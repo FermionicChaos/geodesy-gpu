@@ -27,6 +27,10 @@ namespace geodesy::gpu {
 	
 	descriptor::array::array(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, VkSamplerCreateInfo aSamplerCreateInfo) {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateDescriptorPool vkCreateDescriptorPool = (PFN_vkCreateDescriptorPool)aContext->function_pointer("vkCreateDescriptorPool");
+		PFN_vkAllocateDescriptorSets vkAllocateDescriptorSets = (PFN_vkAllocateDescriptorSets)aContext->function_pointer("vkAllocateDescriptorSets");
+		PFN_vkCreateSampler vkCreateSampler = (PFN_vkCreateSampler)aContext->function_pointer("vkCreateSampler");
+		
 		this->DescriptorSetLayoutBinding = aPipeline->descriptor_set_layout_binding();
 		this->Context = aContext;
 
@@ -57,6 +61,8 @@ namespace geodesy::gpu {
 	}
 
 	descriptor::array::~array() {
+		PFN_vkDestroyDescriptorPool vkDestroyDescriptorPool = (PFN_vkDestroyDescriptorPool)this->Context->function_pointer("vkDestroyDescriptorPool");
+		PFN_vkDestroySampler vkDestroySampler = (PFN_vkDestroySampler)this->Context->function_pointer("vkDestroySampler");
 		//! Not needed since freeing the pool frees the sets.
 		// Free Descriptor Sets
 		// vkFreeDescriptorSets(this->Context->Handle, this->DescriptorPool, this->DescriptorSet.size(), this->DescriptorSet.data());
@@ -71,6 +77,7 @@ namespace geodesy::gpu {
 	void descriptor::array::array::bind(int aSet, int aBinding, int aArrayElement, std::shared_ptr<image> aImage, image::layout aImageLayout) {
 		if ((!this->exists(aSet, aBinding)) || (aImage == nullptr)) return;
 		VkDescriptorSetLayoutBinding DSLB = this->get_descriptor_set_layout_binding(aSet, aBinding);
+		PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)this->Context->function_pointer("vkUpdateDescriptorSets");
 		VkDescriptorImageInfo DII{};
 		DII.imageView			= aImage->View;
 		DII.imageLayout			= (VkImageLayout)aImageLayout;
@@ -92,6 +99,7 @@ namespace geodesy::gpu {
 	void descriptor::array::bind(int aSet, int aBinding, int aArrayElement, std::shared_ptr<buffer> aBuffer, size_t aSize, size_t aOffset) {
 		if ((!this->exists(aSet, aBinding)) || (aBuffer == nullptr)) return;
 		VkDescriptorSetLayoutBinding DSLB = this->get_descriptor_set_layout_binding(aSet, aBinding);
+		PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)this->Context->function_pointer("vkUpdateDescriptorSets");
 		VkDescriptorBufferInfo DBI{};
 		DBI.buffer				= aBuffer->Handle;
 		DBI.offset				= aOffset;
@@ -135,6 +143,7 @@ namespace geodesy::gpu {
 	void descriptor::array::bind(int aSet, int aBinding, int aArrayElement, VkBufferView aBufferView) {
 		if ((!this->exists(aSet, aBinding)) || (aBufferView == VK_NULL_HANDLE)) return;
 		VkDescriptorSetLayoutBinding DSLB = this->get_descriptor_set_layout_binding(aSet, aBinding);
+		PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)this->Context->function_pointer("vkUpdateDescriptorSets");
 		VkWriteDescriptorSet WDS {};
 		WDS.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		WDS.pNext				= NULL;

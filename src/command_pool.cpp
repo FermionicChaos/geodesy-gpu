@@ -25,6 +25,7 @@ namespace geodesy::gpu {
 	}
 
 	command_pool::~command_pool() {
+		PFN_vkDestroyCommandPool vkDestroyCommandPool = (PFN_vkDestroyCommandPool)this->Context->function_pointer("vkDestroyCommandPool");
 		// It is automatically assumed that Context and Handle are valid.
 		// Because every command buffer has a shared copy of the command pool,
 		// this won't be called until all command buffers are destroyed.
@@ -41,6 +42,7 @@ namespace geodesy::gpu {
 		std::vector<std::shared_ptr<command_buffer>> CommandBuffers;
 		std::vector<VkCommandBuffer> CB(aCount, VK_NULL_HANDLE);
 		VkCommandBufferAllocateInfo CBAI = {};
+		PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = (PFN_vkAllocateCommandBuffers)this->Context->function_pointer("vkAllocateCommandBuffers");
 		CBAI.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		CBAI.pNext						= NULL;
 		CBAI.commandPool				= this->Handle;
