@@ -518,6 +518,37 @@ namespace geodesy::gpu {
 
 	pipeline::compute::compute() {}
 
+	void pipeline::barrier(
+		std::shared_ptr<command_buffer> aCommandBuffer,
+		unsigned int aSrcStage, unsigned int aDstStage,
+		unsigned int aSrcAccess, unsigned int aDstAccess
+	) {
+		VkMemoryBarrier MemoryBarrier{};
+		MemoryBarrier.sType				= VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		MemoryBarrier.pNext				= NULL;
+		MemoryBarrier.srcAccessMask		= aSrcAccess;
+		MemoryBarrier.dstAccessMask		= aDstAccess;
+		std::vector<VkMemoryBarrier> MemoryBarrierVector = { MemoryBarrier };
+		pipeline::barrier(aCommandBuffer, aSrcStage, aDstStage, MemoryBarrierVector);
+	}
+
+	void pipeline::barrier(
+		std::shared_ptr<command_buffer> aCommandBuffer, 
+		unsigned int aSrcStage, unsigned int aDstStage, 
+		const std::vector<VkMemoryBarrier>& aMemoryBarrier, 
+		const std::vector<VkBufferMemoryBarrier>& aBufferBarrier, 
+		const std::vector<VkImageMemoryBarrier>& aImageBarrier
+	) {
+		vkCmdPipelineBarrier(
+			aCommandBuffer->Handle, 
+			(VkPipelineStageFlags)aSrcStage, (VkPipelineStageFlags)aDstStage, 
+			0, 
+			aMemoryBarrier.size(), aMemoryBarrier.data(), 
+			aBufferBarrier.size(), aBufferBarrier.data(), 
+			aImageBarrier.size(), aImageBarrier.data()
+		);
+	}
+
 	pipeline::pipeline() {
 		// Public data.
 		this->BindPoint					= VK_PIPELINE_BIND_POINT_MAX_ENUM;
@@ -1009,38 +1040,12 @@ namespace geodesy::gpu {
 		}		
 	}
 
-	void pipeline::barrier(
-		std::shared_ptr<command_buffer> aCommandBuffer,
-		unsigned int aSrcStage, unsigned int aDstStage,
-		unsigned int aSrcAccess, unsigned int aDstAccess
-	) {
-		VkMemoryBarrier MemoryBarrier{};
-		MemoryBarrier.sType				= VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-		MemoryBarrier.pNext				= NULL;
-		MemoryBarrier.srcAccessMask		= aSrcAccess;
-		MemoryBarrier.dstAccessMask		= aDstAccess;
-		std::vector<VkMemoryBarrier> MemoryBarrierVector = { MemoryBarrier };
-		pipeline::barrier(aCommandBuffer, aSrcStage, aDstStage, MemoryBarrierVector);
-	}
-
-	void pipeline::barrier(
+	void pipeline::begin(
 		std::shared_ptr<command_buffer> aCommandBuffer, 
-		unsigned int aSrcStage, unsigned int aDstStage, 
-		const std::vector<VkMemoryBarrier>& aMemoryBarrier, 
-		const std::vector<VkBufferMemoryBarrier>& aBufferBarrier, 
-		const std::vector<VkImageMemoryBarrier>& aImageBarrier
+		std::shared_ptr<framebuffer> aFramebuffer, 
+		VkRect2D aRenderArea, 
+		VkSubpassContents aSubpassContents
 	) {
-		vkCmdPipelineBarrier(
-			aCommandBuffer->Handle, 
-			(VkPipelineStageFlags)aSrcStage, (VkPipelineStageFlags)aDstStage, 
-			0, 
-			aMemoryBarrier.size(), aMemoryBarrier.data(), 
-			aBufferBarrier.size(), aBufferBarrier.data(), 
-			aImageBarrier.size(), aImageBarrier.data()
-		);
-	}
-
-	void pipeline::begin(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<framebuffer> aFramebuffer, VkRect2D aRenderArea, VkSubpassContents aSubpassContents) {
 		VkRenderPassBeginInfo RPBI{};
 		RPBI.sType				= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		RPBI.pNext				= NULL;
@@ -1053,10 +1058,10 @@ namespace geodesy::gpu {
 	}
 
 	void pipeline::bind(
-			std::shared_ptr<command_buffer> 						aCommandBuffer, 
-			std::vector<std::shared_ptr<buffer>> 	aVertexBuffer, 
-			std::shared_ptr<buffer> 				aIndexBuffer, 
-			std::shared_ptr<descriptor::array> 		aDescriptorArray
+		std::shared_ptr<command_buffer> 		aCommandBuffer, 
+		std::vector<std::shared_ptr<buffer>> 	aVertexBuffer, 
+		std::shared_ptr<buffer> 				aIndexBuffer, 
+		std::shared_ptr<descriptor::array> 		aDescriptorArray
 	) {
 		vkCmdBindPipeline(aCommandBuffer->Handle, this->BindPoint, this->Handle);
 		if ((aDescriptorArray != nullptr) ? (aDescriptorArray->DescriptorSet.size() > 0) : false) {
@@ -1080,8 +1085,8 @@ namespace geodesy::gpu {
 		vkCmdEndRenderPass(aCommandBuffer->Handle);
 	}
 
-	void pipeline::draw(
-		std::shared_ptr<command_buffer> 											aCommandBuffer,
+	void pipeline::rasterize(
+		std::shared_ptr<command_buffer> 							aCommandBuffer,
 		std::shared_ptr<framebuffer> 								aFramebuffer,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
@@ -1100,7 +1105,7 @@ namespace geodesy::gpu {
 		this->end(aCommandBuffer);
 	}
 
-	VkResult pipeline::draw(
+	VkResult pipeline::rasterize(
 		std::shared_ptr<framebuffer> 								aFramebuffer,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
@@ -1120,7 +1125,7 @@ namespace geodesy::gpu {
 		return Result;
 	}
 
-	VkResult pipeline::draw(
+	VkResult pipeline::rasterize(
 		std::vector<std::shared_ptr<image>> 						aImage,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
@@ -1179,16 +1184,16 @@ namespace geodesy::gpu {
 		);
 	}
 
-	// VkResult pipeline::raytrace(
-	// 	std::shared_ptr<image> 										aOutputImage,
-	// 	std::shared_ptr<acceleration_structure> 					aTLAS,
-	// 	std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer,
-	// 	std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage
-	// ) {
-	// 	VkResult Result = VK_SUCCESS;
-	// 	// TODO: This is an immediate mode execution.
-	// 	return Result;
-	// }
+	VkResult pipeline::raytrace(
+		std::shared_ptr<image> 										aOutputImage,
+		std::shared_ptr<acceleration_structure> 					aTLAS,
+		std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer,
+		std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage
+	) {
+		VkResult Result = VK_SUCCESS;
+		// TODO: This is an immediate mode execution.
+		return Result;
+	}
 
 	std::vector<VkDescriptorPoolSize> pipeline::descriptor_pool_sizes() const {
 		std::map<VkDescriptorType, uint32_t> DescriptorTypeCount = this->descriptor_type_count();

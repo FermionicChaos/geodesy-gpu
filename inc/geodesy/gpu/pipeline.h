@@ -11,6 +11,7 @@
 #include "shader.h"
 #include "descriptor.h"
 #include "framebuffer.h"
+#include "acceleration_structure.h"
 
 /*
 Flow Chart of Pipeline Creation.
@@ -201,13 +202,20 @@ namespace geodesy::gpu {
 			compute();
 			//compute(shader* aComputeShader);
 
-		private:
-
-			std::shared_ptr<shader>										Shader;
-			std::shared_ptr<glslang::TProgram>							ProgramHandle;
-			std::vector<unsigned int>									ByteCode;
-
 		};
+
+		static void barrier(
+			std::shared_ptr<command_buffer> aCommandBuffer,
+			unsigned int aSrcStage, unsigned int aDstStage,
+			unsigned int aSrcAccess, unsigned int aDstAccess
+		);
+		static void barrier(
+			std::shared_ptr<command_buffer> aCommandBuffer, 
+			unsigned int aSrcStage, unsigned int aDstStage, 
+			const std::vector<VkMemoryBarrier>& aMemoryBarrier = {}, 
+			const std::vector<VkBufferMemoryBarrier>& aBufferBarrier = {}, 
+			const std::vector<VkImageMemoryBarrier>& aImageBarrier = {}
+		);
 
 		// Reference to Host Memory
 		std::shared_ptr<create_info> 							CreateInfo;
@@ -240,59 +248,55 @@ namespace geodesy::gpu {
 		// Destructor
 		~pipeline();
 
-		static void barrier(
-			std::shared_ptr<command_buffer> aCommandBuffer,
-			unsigned int aSrcStage, unsigned int aDstStage,
-			unsigned int aSrcAccess, unsigned int aDstAccess
-		);
-		static void barrier(
-			std::shared_ptr<command_buffer> aCommandBuffer, 
-			unsigned int aSrcStage, unsigned int aDstStage, 
-			const std::vector<VkMemoryBarrier>& aMemoryBarrier = {}, 
-			const std::vector<VkBufferMemoryBarrier>& aBufferBarrier = {}, 
-			const std::vector<VkImageMemoryBarrier>& aImageBarrier = {}
-		);
-		void begin(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<framebuffer> aFrame, VkRect2D aRenderArea, VkSubpassContents aSubpassContents = VK_SUBPASS_CONTENTS_INLINE);
+		// Can be used for rasterization, raytracing, or compute.
 		void bind(
 			std::shared_ptr<command_buffer> 							aCommandBuffer, 
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {}, 
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr, 
 			std::shared_ptr<descriptor::array> 							aDescriptorArray = nullptr
 		);
-		void end(std::shared_ptr<command_buffer> aCommandBuffer);
-		void draw(
+
+		// Rasterization API
+		void begin(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<framebuffer> aFrame, VkRect2D aRenderArea, VkSubpassContents aSubpassContents = VK_SUBPASS_CONTENTS_INLINE);
+		void rasterize(
 			std::shared_ptr<command_buffer> 							aCommandBuffer,
 			std::shared_ptr<framebuffer> 								aFramebuffer,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
 			std::shared_ptr<descriptor::array> 							aDescriptorArray = nullptr
 		);
+		void end(std::shared_ptr<command_buffer> aCommandBuffer);
 
-		VkResult draw(
+		// Raytracing API
+		void raytrace(
+			std::shared_ptr<command_buffer> 							aCommandBuffer,
+			std::shared_ptr<descriptor::array> 							aDescriptorArray,
+			std::array<unsigned int, 3> 								aResolution
+		);
+
+		// Immediate Mode Execution (Not Recommended For Performance Critical Code)
+		// Rasterization API
+		VkResult rasterize(
 			std::shared_ptr<framebuffer> 								aFramebuffer,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
 			std::shared_ptr<descriptor::array> 							aDescriptorArray = nullptr
 		);
-		VkResult draw(
+		VkResult rasterize(
 			std::vector<std::shared_ptr<image>> 						aImage,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
 			std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer = {},
 			std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage = {}
 		);
-
-		void raytrace(
-			std::shared_ptr<command_buffer> 							aCommandBuffer,
-			std::shared_ptr<descriptor::array> 							aDescriptorArray,
-			std::array<unsigned int, 3> 								aResolution
+		// Raytracing API
+		VkResult raytrace(
+			std::shared_ptr<image> 										aOutputImage,
+			std::shared_ptr<acceleration_structure> 					aTLAS,
+			std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer = {},
+			std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage = {}
 		);
-		// VkResult raytrace(
-		// 	std::shared_ptr<image> 										aOutputImage,
-		// 	std::shared_ptr<acceleration_structure> 					aTLAS,
-		// 	std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer = {},
-		// 	std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage = {}
-		// );
+		// Compute API
 
 		std::vector<VkDescriptorPoolSize> descriptor_pool_sizes() const;
 		std::map<VkDescriptorType, uint32_t> descriptor_type_count() const;

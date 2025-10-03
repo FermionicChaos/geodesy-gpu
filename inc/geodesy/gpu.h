@@ -37,6 +37,7 @@
 // the objects they reference are destroyed.
 #include "gpu/descriptor.h"
 #include "gpu/framebuffer.h"
+#include "gpu/acceleration_structure.h"
 #include "gpu/pipeline.h"
 #include "gpu/context.h"
 #include "gpu/instance.h"
