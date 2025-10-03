@@ -82,7 +82,7 @@ namespace geodesy::gpu {
 		VkBufferCreateInfo 			CreateInfo;
 		VkBuffer					Handle;
 
-		unsigned int 						MemoryType;
+		unsigned int 				MemoryType;
 		VkDeviceMemory				MemoryHandle;
 
 		void* 						Ptr;
@@ -123,12 +123,6 @@ namespace geodesy::gpu {
 		) const;
 
 		VkMemoryRequirements memory_requirements() const;
-
-	private:
-
-		void clear();
-
-		void zero_out();
 
 	};
 

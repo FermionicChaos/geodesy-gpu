@@ -460,9 +460,6 @@ namespace geodesy::gpu {
 		// Deep check for opacity, classifies image as opaque, transparent, or translucent.
 		int transparency(int aChannelSelection) const;
 
-		void zero_out();
-		void clear();
-
 	};
 
 }

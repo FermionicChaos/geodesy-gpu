@@ -782,7 +782,18 @@ namespace geodesy::gpu {
 	}
 
 	image::image() {
-		this->zero_out();
+		this->OpaquePercentage 						= 0.0f;
+		this->TransparentPercentage 				= 0.0f;
+		this->TranslucentPercentage 				= 0.0f;
+		this->Context								= nullptr;
+		this->CreateInfo							= {};
+		this->Handle								= VK_NULL_HANDLE;
+		this->View 									= VK_NULL_HANDLE;
+		this->MemoryType							= 0;
+		this->MemoryHandle							= VK_NULL_HANDLE;
+		this->CreateInfo.sType						= VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		this->CreateInfo.sharingMode				= VK_SHARING_MODE_EXCLUSIVE;
+		this->CreateInfo.queueFamilyIndexCount		= 0;
 	}
 
 	// image::image(std::string aFilePath) : file(aFilePath) {
@@ -884,12 +895,12 @@ namespace geodesy::gpu {
 	image::image(std::shared_ptr<context> aContext, create_info aCreateInfo, std::shared_ptr<image> aHostImage) 
 	: 
 	image(aContext, aCreateInfo, (format)aHostImage->CreateInfo.format, aHostImage->CreateInfo.extent.width, aHostImage->CreateInfo.extent.height, aHostImage->CreateInfo.extent.depth, aHostImage->CreateInfo.arrayLayers, aHostImage->HostData) 
-	{
-
-	}
+	{}
 
 	image::image(std::shared_ptr<context> aContext, create_info aCreateInfo, format aFormat, unsigned int aX, unsigned int aY, unsigned int aZ, unsigned int aT, void* aTextureData) : image() {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateImage vkCreateImage = (PFN_vkCreateImage)aContext->function_pointer("vkCreateImage");
+		PFN_vkBindImageMemory vkBindImageMemory = (PFN_vkBindImageMemory)aContext->function_pointer("vkBindImageMemory");
 
 		// Image Handle Info
 		this->Context								= aContext;
@@ -970,7 +981,14 @@ namespace geodesy::gpu {
 
 	// Destructor
 	image::~image() {
-		this->clear();
+		PFN_vkDestroyImageView vkDestroyImageView = (PFN_vkDestroyImageView)this->Context->function_pointer("vkDestroyImageView");
+		PFN_vkDestroyImage vkDestroyImage = (PFN_vkDestroyImage)this->Context->function_pointer("vkDestroyImage");
+		vkDestroyImageView(Context->Handle, View, NULL);
+		vkDestroyImage(Context->Handle, Handle, NULL);
+		Context->free_memory(MemoryHandle);
+		// if (HostData != NULL) {
+		// 	stbi_image_free(HostData);
+		// }
 	}
 
 	// Device Operation Support: T.
@@ -987,6 +1005,7 @@ namespace geodesy::gpu {
 	}
 
 	void image::copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<buffer> aSourceData, std::vector<VkBufferImageCopy> aRegionList) {
+		PFN_vkCmdCopyBufferToImage vkCmdCopyBufferToImage = (PFN_vkCmdCopyBufferToImage)this->Context->function_pointer("vkCmdCopyBufferToImage");
 		vkCmdCopyBufferToImage(aCommandBuffer->Handle, aSourceData->Handle, this->Handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, aRegionList.size(), aRegionList.data());
 	}
 
@@ -1002,6 +1021,7 @@ namespace geodesy::gpu {
 	}
 
 	void image::copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<image> aSourceData, std::vector<VkImageCopy> aRegionList) {
+		PFN_vkCmdCopyImage vkCmdCopyImage = (PFN_vkCmdCopyImage)this->Context->function_pointer("vkCmdCopyImage");
 		vkCmdCopyImage(
 			aCommandBuffer->Handle,
 			aSourceData->Handle, 	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
@@ -1017,6 +1037,7 @@ namespace geodesy::gpu {
 		uint32_t aMipLevel, uint32_t aMipLevelCount,
 		uint32_t aArrayLayerStart, uint32_t aArrayLayerCount
 	) {
+		PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier = (PFN_vkCmdPipelineBarrier)this->Context->function_pointer("vkCmdPipelineBarrier");
 		VkImageMemoryBarrier ImageMemoryBarrier = this->memory_barrier(
 			// All Write Ops Must Finish			// Prepare Reading
 			device::access::MEMORY_WRITE, 			device::access::MEMORY_READ,
@@ -1037,6 +1058,7 @@ namespace geodesy::gpu {
 
 	void image::clear(std::shared_ptr<command_buffer> aCommandBuffer, VkClearColorValue aClearColor, image::layout aCurrentImageLayout, uint32_t aStartingArrayLayer, uint32_t aArrayLayerCount) {
 		VkImageSubresourceRange SubresourceRange{};
+		PFN_vkCmdClearColorImage vkCmdClearColorImage = (PFN_vkCmdClearColorImage)this->Context->function_pointer("vkCmdClearColorImage");
 		SubresourceRange.aspectMask 	= VK_IMAGE_ASPECT_COLOR_BIT;
 		SubresourceRange.baseMipLevel 	= 0;
 		SubresourceRange.levelCount 	= this->CreateInfo.mipLevels;
@@ -1049,6 +1071,7 @@ namespace geodesy::gpu {
 
 	void image::clear_depth(std::shared_ptr<command_buffer> aCommandBuffer, VkClearDepthStencilValue aClearDepthStencil, image::layout aCurrentImageLayout, uint32_t aStartingArrayLayer, uint32_t aArrayLayerCount) {
 		VkImageSubresourceRange SubresourceRange{};
+		PFN_vkCmdClearDepthStencilImage vkCmdClearDepthStencilImage = (PFN_vkCmdClearDepthStencilImage)this->Context->function_pointer("vkCmdClearDepthStencilImage");
 		SubresourceRange.aspectMask 	= VK_IMAGE_ASPECT_DEPTH_BIT;
 		SubresourceRange.baseMipLevel 	= 0;
 		SubresourceRange.levelCount 	= this->CreateInfo.mipLevels;
@@ -1122,6 +1145,7 @@ namespace geodesy::gpu {
 		// This function will transition the designated image resources after 
 		// all other operations are completed.
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier = (PFN_vkCmdPipelineBarrier)this->Context->function_pointer("vkCmdPipelineBarrier");
 		VkImageMemoryBarrier ImageMemoryBarrier = this->memory_barrier(
 			// All Write Ops Must Finish			// Prepare Reading
 			device::access::MEMORY_WRITE, 			device::access::MEMORY_READ,
@@ -1185,6 +1209,8 @@ namespace geodesy::gpu {
 
 	VkResult image::generate_mipmaps(layout aCurrentLayout, layout aFinalLayout, VkFilter aFilter) {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier = (PFN_vkCmdPipelineBarrier)this->Context->function_pointer("vkCmdPipelineBarrier");
+		PFN_vkCmdBlitImage vkCmdBlitImage = (PFN_vkCmdBlitImage)this->Context->function_pointer("vkCmdBlitImage");
 
 		// ----- Generate MipMaps ----- // 
 
@@ -1389,6 +1415,7 @@ namespace geodesy::gpu {
 		VkResult Result = VK_SUCCESS;
 		VkImageViewCreateInfo IVCI{};
 		VkImageView IV = VK_NULL_HANDLE;
+		PFN_vkCreateImageView vkCreateImageView = (PFN_vkCreateImageView)this->Context->function_pointer("vkCreateImageView");
 		IVCI.sType								= VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		IVCI.pNext								= NULL;
 		IVCI.flags								= 0;
@@ -1529,37 +1556,6 @@ namespace geodesy::gpu {
 		if ((aChannelSelection < 0) || (aChannelSelection >= image::channel_count(this->CreateInfo.format))) return TransparencyType;
 
 		return TransparencyType;
-	}
-
-	void image::clear() {
-		if (Context != nullptr) {
-			if (View != VK_NULL_HANDLE) {
-				vkDestroyImageView(Context->Handle, View, NULL);
-			}
-			if (Handle != VK_NULL_HANDLE) {
-				vkDestroyImage(Context->Handle, Handle, NULL);
-			}
-			Context->free_memory(MemoryHandle);
-		}
-		// if (HostData != NULL) {
-		// 	stbi_image_free(HostData);
-		// }
-		this->zero_out();
-	}
-
-	void image::zero_out() {
-		this->OpaquePercentage 						= 0.0f;
-		this->TransparentPercentage 				= 0.0f;
-		this->TranslucentPercentage 				= 0.0f;
-		this->Context								= nullptr;
-		this->CreateInfo							= {};
-		this->Handle								= VK_NULL_HANDLE;
-		this->View 									= VK_NULL_HANDLE;
-		this->MemoryType							= 0;
-		this->MemoryHandle							= VK_NULL_HANDLE;
-		this->CreateInfo.sType						= VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-		this->CreateInfo.sharingMode				= VK_SHARING_MODE_EXCLUSIVE;
-		this->CreateInfo.queueFamilyIndexCount		= 0;
 	}
 
 }

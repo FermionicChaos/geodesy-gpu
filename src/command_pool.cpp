@@ -9,6 +9,8 @@ namespace geodesy::gpu {
 	}
 
 	command_pool::command_pool(std::shared_ptr<context> aContext, unsigned int aOperation, VkCommandPoolCreateFlags aFlags) : command_pool() {
+		PFN_vkCreateCommandPool vkCreateCommandPool = (PFN_vkCreateCommandPool)aContext->function_pointer("vkCreateCommandPool");
+		
 		this->Context = aContext;
 
 		context::queue Q = aContext->get_execution_queue(aOperation);

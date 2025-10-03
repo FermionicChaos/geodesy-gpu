@@ -27,7 +27,13 @@ namespace geodesy::gpu {
 	}
 
 	buffer::buffer() {
-		this->zero_out();
+		this->Context		= nullptr;
+		this->CreateInfo 	= {};
+		this->Handle 		= VK_NULL_HANDLE;
+		this->ElementCount 	= 0;
+		this->MemoryType 	= 0;
+		this->MemoryHandle 	= VK_NULL_HANDLE;
+		this->Ptr 			= NULL;
 	}
 
 	buffer::buffer(std::shared_ptr<context> aContext, create_info aCreateInfo, size_t aBufferSize, void* aBufferData) 
@@ -38,6 +44,8 @@ namespace geodesy::gpu {
 
 	buffer::buffer(std::shared_ptr<context> aContext, unsigned int aMemoryType, unsigned int aBufferUsage, size_t aElementCount, size_t aBufferSize, void* aBufferData) : buffer() {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateBuffer vkCreateBuffer = (PFN_vkCreateBuffer)aContext->function_pointer("vkCreateBuffer");
+		PFN_vkBindBufferMemory vkBindBufferMemory = (PFN_vkBindBufferMemory)aContext->function_pointer("vkBindBufferMemory");
 
 		Context 								= aContext;
 		ElementCount							= aElementCount;
@@ -73,7 +81,13 @@ namespace geodesy::gpu {
 	}
 
 	buffer::~buffer() {
-		this->clear();
+		PFN_vkDestroyBuffer vkDestroyBuffer = (PFN_vkDestroyBuffer)this->Context->function_pointer("vkDestroyBuffer");
+		// Unmap memory if mapped.
+		this->unmap_memory();
+		// Destroy buffer object.
+		vkDestroyBuffer(this->Context->Handle, this->Handle, NULL);
+		// Free allocated memory.
+		this->Context->free_memory(this->MemoryHandle);
 	}
 
 	void buffer::copy(std::shared_ptr<command_buffer> aCommandBuffer, size_t aDestinationOffset, std::shared_ptr<buffer> aSourceData, size_t aSourceOffset, size_t aRegionSize) {
@@ -87,6 +101,7 @@ namespace geodesy::gpu {
 	}
 
 	void buffer::copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<buffer> aSourceData, std::vector<VkBufferCopy> aRegionList) {
+		PFN_vkCmdCopyBuffer vkCmdCopyBuffer = (PFN_vkCmdCopyBuffer)this->Context->function_pointer("vkCmdCopyBuffer");
 		vkCmdCopyBuffer(aCommandBuffer->Handle, aSourceData->Handle, this->Handle, aRegionList.size(), aRegionList.data());
 	}
 
@@ -104,6 +119,7 @@ namespace geodesy::gpu {
 	}
 
 	void buffer::copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<image> aSourceData, std::vector<VkBufferImageCopy> aRegionList) {
+		PFN_vkCmdCopyImageToBuffer vkCmdCopyImageToBuffer = (PFN_vkCmdCopyImageToBuffer)this->Context->function_pointer("vkCmdCopyImageToBuffer");
 		vkCmdCopyImageToBuffer(
 			aCommandBuffer->Handle, 
 			aSourceData->Handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
@@ -297,12 +313,14 @@ namespace geodesy::gpu {
 
 	void *buffer::map_memory(size_t aOffset, size_t aSize) {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkMapMemory vkMapMemory = (PFN_vkMapMemory)this->Context->function_pointer("vkMapMemory");
 		Result = vkMapMemory(this->Context->Handle, this->MemoryHandle, aOffset, aSize, 0, &this->Ptr);
 		return this->Ptr;
 	}
 
 	void buffer::unmap_memory() {
 		if (this->Ptr != NULL) {
+			PFN_vkUnmapMemory vkUnmapMemory = (PFN_vkUnmapMemory)this->Context->function_pointer("vkUnmapMemory");
 			vkUnmapMemory(this->Context->Handle, this->MemoryHandle);
 			this->Ptr = NULL;
 		}
@@ -310,6 +328,7 @@ namespace geodesy::gpu {
 
 	VkDeviceAddress buffer::device_address() const {
 		VkBufferDeviceAddressInfo BDIA{};
+		PFN_vkGetBufferDeviceAddress vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)this->Context->function_pointer("vkGetBufferDeviceAddress");
 		BDIA.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
 		BDIA.pNext = NULL;
 		BDIA.buffer = this->Handle;
@@ -335,27 +354,6 @@ namespace geodesy::gpu {
 
 	VkMemoryRequirements buffer::memory_requirements() const {
 		return this->Context->get_buffer_memory_requirements(this->Handle);
-	}
-
-	void buffer::clear() {
-		this->unmap_memory();
-		if (Context != nullptr) {
-			if (Handle != VK_NULL_HANDLE) {
-				vkDestroyBuffer(Context->Handle, Handle, NULL);
-			}
-			Context->free_memory(MemoryHandle);
-		}
-		this->zero_out();
-	}
-
-	void buffer::zero_out() {
-		this->Context		= nullptr;
-		this->CreateInfo 	= {};
-		this->Handle 		= VK_NULL_HANDLE;
-		this->ElementCount 	= 0;
-		this->MemoryType 	= 0;
-		this->MemoryHandle 	= VK_NULL_HANDLE;
-		this->Ptr 			= NULL;
 	}
 
 }

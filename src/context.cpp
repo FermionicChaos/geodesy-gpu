@@ -31,6 +31,7 @@ namespace geodesy::gpu {
 
 		this->Instance = aInstance;
 		this->Device = aDevice;
+		this->vkGetDeviceProcAddr = (PFN_vkGetDeviceProcAddr)aInstance->function_pointer("vkGetDeviceProcAddr");
 
 		// This keeps track of how many queues have been used up in QueueIndexMap.
 		std::vector<int> QueueOffset(aDevice->QueueFamilyProperties.size(), 0);
