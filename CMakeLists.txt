@@ -20,16 +20,38 @@ function(fetch_dependency AGIT_REPO AGIT_TAG ANAME)
         GIT_TAG        ${AGIT_TAG}
         SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dep/${ANAME}-src
     )
-
-    # Apply cache variables
+    
+    # Apply cache variables with intelligent type detection and FORCE override
+    # CRITICAL: Set these BEFORE FetchContent_Declare
     foreach(arg IN LISTS ARGN)
         string(REPLACE "=" ";" kv "${arg}")
         list(GET kv 0 key)
         list(GET kv 1 val)
-        set(${key} ${val} CACHE BOOL "")
+       
+        # Debug output
+        message(STATUS "Setting ${key}=${val} for ${ANAME}")
+       
+        # Determine the appropriate cache variable type based on value
+        if(val MATCHES "^(ON|OFF|TRUE|FALSE)$")
+            # Boolean values
+            set(${key} ${val} CACHE BOOL "Forced by fetch_dependency for ${ANAME}" FORCE)
+            message(STATUS "  -> Set as BOOL: ${key}=${${key}}")
+        elseif(val MATCHES "^[0-9]+(\\.[0-9]+)*(\\.[0-9]+)*$")
+            # Version numbers (like 1.3.290.0)
+            set(${key} ${val} CACHE STRING "Forced by fetch_dependency for ${ANAME}" FORCE)
+            message(STATUS "  -> Set as STRING: ${key}=${${key}}")
+        elseif(val MATCHES "^[0-9]+$")
+            # Pure integers - could be BOOL or STRING, default to STRING for safety
+            set(${key} ${val} CACHE STRING "Forced by fetch_dependency for ${ANAME}" FORCE)
+            message(STATUS "  -> Set as STRING: ${key}=${${key}}")
+        else()
+            # Everything else as STRING
+            set(${key} ${val} CACHE STRING "Forced by fetch_dependency for ${ANAME}" FORCE)
+            message(STATUS "  -> Set as STRING: ${key}=${${key}}")
+        endif()
     endforeach()
-
-    # Actually fetch it
+    
+    # Actually fetch it - cache variables should now be available to subdirectory
     FetchContent_MakeAvailable(${ANAME})
 endfunction()
 
