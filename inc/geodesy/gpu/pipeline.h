@@ -199,7 +199,7 @@ namespace geodesy::gpu {
 			std::array<unsigned int, 3> 								ThreadGroupSize; 		// Number of Threads Per Group
 
 			compute();
-			compute(std::shared_ptr<shader> aComputeShader, std::array<unsigned int, 3> aThreadGroupCount, std::array<unsigned int, 3> aThreadGroupSize = { 1, 1, 1 });
+			compute(std::shared_ptr<shader> aComputeShader, std::array<unsigned int, 3> aThreadGroupCount = { 1, 1, 1 }, std::array<unsigned int, 3> aThreadGroupSize = { 1, 1, 1 });
 
 		};
 

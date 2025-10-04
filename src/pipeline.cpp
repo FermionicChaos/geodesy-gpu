@@ -615,14 +615,12 @@ namespace geodesy::gpu {
 	}
 
 	pipeline::pipeline() {
-		// Public data.
-		this->BindPoint					= VK_PIPELINE_BIND_POINT_MAX_ENUM;
-		this->Layout					= VK_NULL_HANDLE;
-		this->Cache						= VK_NULL_HANDLE;
-		this->Handle					= VK_NULL_HANDLE;
-
-		// Pipline Specific Construction Data.
-		this->Context					= nullptr;
+		this->BindPoint			= VK_PIPELINE_BIND_POINT_MAX_ENUM;
+		this->Layout			= VK_NULL_HANDLE;
+		this->Cache				= VK_NULL_HANDLE;
+		this->Handle			= VK_NULL_HANDLE;
+		this->DescriptorPool	= VK_NULL_HANDLE;
+		this->RenderPass		= VK_NULL_HANDLE;
 	}
 
 	pipeline::pipeline(std::shared_ptr<context> aContext, std::shared_ptr<rasterizer> aRasterizer, VkRenderPass aRenderPass, uint32_t aSubpassIndex) : pipeline() {
