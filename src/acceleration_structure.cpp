@@ -149,7 +149,7 @@ namespace geodesy::gpu {
 			gpu::buffer::create_info IBCI;
 			IBCI.Memory = device::memory::DEVICE_LOCAL;
 			IBCI.Usage = buffer::usage::ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_KHR | buffer::usage::ACCELERATION_STRUCTURE_STORAGE_KHR | buffer::usage::SHADER_DEVICE_ADDRESS | buffer::usage::STORAGE | buffer::usage::TRANSFER_SRC | buffer::usage::TRANSFER_DST;
-			this->InstanceBuffer = aContext->create<buffer>(IBCI, aInstanceList.size() * sizeof(VkAccelerationStructureInstanceKHR), aInstanceList.data());
+			this->InstanceBuffer = aContext->create<buffer>(IBCI, aInstanceList.size() * sizeof(VkAccelerationStructureInstanceKHR), const_cast<void*>(static_cast<const void*>(aInstanceList.data())));
 		}
 
 		// Define geometry for TLAS, similar struct to BLAS.
