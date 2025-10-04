@@ -195,12 +195,11 @@ namespace geodesy::gpu {
 		// Requires on a single compute shader.
 		struct compute : public create_info {
 
-			std::array<unsigned int, 3> 								GroupCount; // Number of Groups
-			std::array<unsigned int, 3> 								GroupSize; //  Number of Items
-			VkComputePipelineCreateInfo									CreateInfo{};
+			std::array<unsigned int, 3> 								ThreadGroupCount; 		// Number of Thread Groups
+			std::array<unsigned int, 3> 								ThreadGroupSize; 		// Number of Threads Per Group
 
 			compute();
-			//compute(shader* aComputeShader);
+			compute(std::shared_ptr<shader> aComputeShader, std::array<unsigned int, 3> aThreadGroupCount, std::array<unsigned int, 3> aThreadGroupSize = { 1, 1, 1 });
 
 		};
 
@@ -266,12 +265,17 @@ namespace geodesy::gpu {
 			std::shared_ptr<descriptor::array> 							aDescriptorArray = nullptr
 		);
 		void end(std::shared_ptr<command_buffer> aCommandBuffer);
-
 		// Raytracing API
 		void raytrace(
 			std::shared_ptr<command_buffer> 							aCommandBuffer,
 			std::shared_ptr<descriptor::array> 							aDescriptorArray,
 			std::array<unsigned int, 3> 								aResolution
+		);
+		// Compute API
+		void dispatch(
+			std::shared_ptr<command_buffer> 							aCommandBuffer,
+			std::array<unsigned int, 3> 								aThreadGroupCount,
+			std::shared_ptr<descriptor::array> 							aDescriptorArray
 		);
 
 		// Immediate Mode Execution (Not Recommended For Performance Critical Code)
@@ -297,6 +301,15 @@ namespace geodesy::gpu {
 			std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage = {}
 		);
 		// Compute API
+		VkResult dispatch(
+			std::array<unsigned int, 3> 								aThreadGroupCount,
+			std::shared_ptr<descriptor::array> 							aDescriptorArray
+		);
+		VkResult dispatch(
+			std::array<unsigned int, 3> 								aThreadGroupCount,
+			std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aBuffers,
+			std::map<std::pair<int, int>, std::shared_ptr<image>> 		aImages = {}
+		);
 
 		std::vector<VkDescriptorPoolSize> descriptor_pool_sizes() const;
 		std::map<VkDescriptorType, uint32_t> descriptor_type_count() const;

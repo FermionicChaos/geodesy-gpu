@@ -264,7 +264,7 @@ namespace geodesy::gpu {
 		VkAccelerationStructureDeviceAddressInfoKHR ASDAI{};
 		ASDAI.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
 		ASDAI.accelerationStructure = this->Handle;
-		PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR = (PFN_vkGetAccelerationStructureDeviceAddressKHR)this->Context->FunctionPointer["vkGetAccelerationStructureDeviceAddressKHR"];
+		PFN_vkGetAccelerationStructureDeviceAddressKHR vkGetAccelerationStructureDeviceAddressKHR = (PFN_vkGetAccelerationStructureDeviceAddressKHR)this->Context->function_pointer("vkGetAccelerationStructureDeviceAddressKHR");
 		return vkGetAccelerationStructureDeviceAddressKHR(this->Context->Handle, &ASDAI);
 	}
 

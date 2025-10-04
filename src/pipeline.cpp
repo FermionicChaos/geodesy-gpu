@@ -516,7 +516,71 @@ namespace geodesy::gpu {
 		}
 	}
 
-	pipeline::compute::compute() {}
+	pipeline::compute::compute() {
+		this->BindPoint = pipeline::type::COMPUTE;
+	}
+
+	pipeline::compute::compute(std::shared_ptr<shader> aComputeShader, std::array<unsigned int, 3> aThreadGroupCount, std::array<unsigned int, 3> aThreadGroupSize) : compute() {
+
+		// Compute Pipeline has only one shader stage.
+		this->Shader = { aComputeShader };
+
+		this->ThreadGroupCount = aThreadGroupCount;
+		this->ThreadGroupSize = aThreadGroupSize;
+
+		// Go ahead and link the shader and build reflection.
+		EShMessages Message = (EShMessages)(
+			EShMessages::EShMsgAST |
+			EShMessages::EShMsgSpvRules |
+			EShMessages::EShMsgVulkanRules |
+			EShMessages::EShMsgDebugInfo |
+			EShMessages::EShMsgBuiltinSymbolTable
+		);
+
+		// Link various shader stages together.
+		this->Program = std::make_shared<glslang::TProgram>();
+		for (std::shared_ptr<shader> Shd : Shader) {
+			this->Program->addShader(Shd->Handle.get());
+		}
+
+		// Link Shader Stages
+		bool Success = this->Program->link(Message);
+
+		// Check if Link was successful
+		if (!Success) {
+			std::cout << this->Program->getInfoLog() << std::endl;
+		}
+
+		// Build and acquire reflection variables.
+		if (Success) {
+			this->Program->buildReflection(EShReflectionAllIOVariables);
+
+			// Generates Descriptor Set Layout Bindings.
+			this->generate_descriptor_set_layout_binding();
+
+			// Debug output for compute pipeline reflection
+			std::cout << "// -------------------- Compute Pipeline Reflection Start -------------------- \\\\" << std::endl << std::endl;
+		
+			// Print Uniforms
+			std::cout << "----- Uniform Objects -----" << std::endl;
+			for (auto& Variable : this->DescriptorSetVariable) {
+				std::cout << "layout (set = " << Variable.first.first << ", binding = " << Variable.first.second << ") uniform " << Variable.second->name << ";" << std::endl;
+			}
+			std::cout << std::endl;
+
+			std::cout << "\\\\ -------------------- Compute Pipeline Reflection End -------------------- //" << std::endl;
+		}
+
+		// Generate SPIRV code.
+		if (Success) {
+			glslang::SpvOptions Option;
+			spv::SpvBuildLogger Logger;
+			this->ByteCode = std::vector<std::vector<unsigned int>>(this->Shader.size());
+			for (size_t i = 0; i < this->Shader.size(); i++) {
+				glslang::GlslangToSpv(*this->Program->getIntermediate(this->Shader[i]->Handle->getStage()), this->ByteCode[i], &Logger, &Option);
+			}
+		}
+	}
 
 	void pipeline::barrier(
 		std::shared_ptr<command_buffer> aCommandBuffer,
@@ -539,6 +603,7 @@ namespace geodesy::gpu {
 		const std::vector<VkBufferMemoryBarrier>& aBufferBarrier, 
 		const std::vector<VkImageMemoryBarrier>& aImageBarrier
 	) {
+		PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier = (PFN_vkCmdPipelineBarrier)aCommandBuffer->Context->function_pointer("vkCmdPipelineBarrier");
 		vkCmdPipelineBarrier(
 			aCommandBuffer->Handle, 
 			(VkPipelineStageFlags)aSrcStage, (VkPipelineStageFlags)aDstStage, 
@@ -562,10 +627,12 @@ namespace geodesy::gpu {
 
 	pipeline::pipeline(std::shared_ptr<context> aContext, std::shared_ptr<rasterizer> aRasterizer, VkRenderPass aRenderPass, uint32_t aSubpassIndex) : pipeline() {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateRenderPass vkCreateRenderPass = (PFN_vkCreateRenderPass)aContext->function_pointer("vkCreateRenderPass");
+		PFN_vkCreateGraphicsPipelines vkCreateGraphicsPipelines = (PFN_vkCreateGraphicsPipelines)aContext->function_pointer("vkCreateGraphicsPipelines");		
 
-		this->BindPoint							= VK_PIPELINE_BIND_POINT_GRAPHICS;
-		this->Context							= aContext;
-		this->CreateInfo 						= aRasterizer;
+		this->CreateInfo 	= aRasterizer;
+		this->Context		= aContext;
+		this->BindPoint		= VK_PIPELINE_BIND_POINT_GRAPHICS;
 
 		// Create Render Pass.
 		{
@@ -717,9 +784,9 @@ namespace geodesy::gpu {
 		PFN_vkGetPhysicalDeviceProperties2 vkGetPhysicalDeviceProperties2 = (PFN_vkGetPhysicalDeviceProperties2)aContext->function_pointer("vkGetPhysicalDeviceProperties2");
 		PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)aContext->function_pointer("vkGetRayTracingShaderGroupHandlesKHR");
 
-		this->BindPoint				= VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
-		this->Context				= aContext;
-		this->CreateInfo			= aRaytracer;
+		this->CreateInfo	= aRaytracer;
+		this->Context		= aContext;
+		this->BindPoint		= VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
 
 		// Generate GPU shader modules.
 		Result = this->shader_stage_create(aRaytracer);
@@ -1004,11 +1071,28 @@ namespace geodesy::gpu {
 
 	pipeline::pipeline(std::shared_ptr<context> aContext, std::shared_ptr<compute> aCompute) : pipeline() {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateComputePipelines vkCreateComputePipelines = (PFN_vkCreateComputePipelines)aContext->function_pointer("vkCreateComputePipelines");
 
-		BindPoint	= VK_PIPELINE_BIND_POINT_COMPUTE;
-		Context		= aContext;
+		this->CreateInfo	= aCompute;
+		this->Context		= aContext;
+		this->BindPoint		= VK_PIPELINE_BIND_POINT_COMPUTE;
 
-		//Result = vkCreateComputePipelines(Context->handle(), Cache, 1, &Compute.CreateInfo, NULL, &Handle);
+		// Create Respective Shader Modules.
+		Result = this->shader_stage_create(aCompute);
+
+		// Generate Descriptor Set Layouts from Meta Data gathered from shaders, create pipeline layout.
+		Result = this->create_pipeline_layout(aCompute->DescriptorSetLayoutBinding);
+
+		VkComputePipelineCreateInfo CPCI{};
+		CPCI.sType						= VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		CPCI.pNext						= NULL;
+		CPCI.flags						= 0;
+		CPCI.stage						= this->Stage[0];
+		CPCI.layout						= this->Layout;
+		CPCI.basePipelineHandle			= VK_NULL_HANDLE;
+		CPCI.basePipelineIndex			= 0;
+
+		Result = vkCreateComputePipelines(aContext->Handle, this->Cache, 1, &CPCI, NULL, &this->Handle);
 	}
 
 	pipeline::~pipeline() {
@@ -1142,6 +1226,16 @@ namespace geodesy::gpu {
 		);
 	}
 
+	void pipeline::dispatch(
+		std::shared_ptr<command_buffer> 							aCommandBuffer,
+		std::array<unsigned int, 3> 								aThreadGroupCount,
+		std::shared_ptr<descriptor::array> 							aDescriptorArray
+	) {
+		PFN_vkCmdDispatch vkCmdDispatch = (PFN_vkCmdDispatch)this->Context->function_pointer("vkCmdDispatch");
+		this->bind(aCommandBuffer, {}, nullptr, aDescriptorArray);
+		vkCmdDispatch(aCommandBuffer->Handle, aThreadGroupCount[0], aThreadGroupCount[1], aThreadGroupCount[2]);
+	}
+
 	VkResult pipeline::rasterize(
 		std::shared_ptr<framebuffer> 								aFramebuffer,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
@@ -1211,6 +1305,49 @@ namespace geodesy::gpu {
 		VkResult Result = VK_SUCCESS;
 		// TODO: This is an immediate mode execution.
 		return Result;
+	}
+
+	VkResult pipeline::dispatch(
+		std::array<unsigned int, 3> 								aThreadGroupCount,
+		std::shared_ptr<descriptor::array> 							aDescriptorArray
+	) {
+		VkResult Result = VK_SUCCESS;
+
+		// Allocated GPU Resources needed to execute.
+		auto CommandPool = this->Context->create<command_pool>(device::operation::COMPUTE);
+		auto CommandBuffer = CommandPool->allocate_command_buffer();
+
+		Result = CommandBuffer->begin();
+		this->dispatch(CommandBuffer, aThreadGroupCount, aDescriptorArray);
+		Result = CommandBuffer->end();
+
+		// Execute Command Buffer here.
+		Result = this->Context->execute_and_wait(device::operation::COMPUTE, CommandBuffer);
+
+		return Result;
+	}
+
+	VkResult pipeline::dispatch(
+		std::array<unsigned int, 3> 								aThreadGroupCount,
+		std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aBuffers,
+		std::map<std::pair<int, int>, std::shared_ptr<image>> 		aImages
+	) {
+		VkResult Result = VK_SUCCESS;
+
+		// Create Descriptor Array if not provided.
+		auto DescriptorArray = this->Context->create<descriptor::array>(this->shared_from_this());
+
+		// Bind uniform buffers.
+		for (auto& [SetBinding, Buffer] : aBuffers) {
+			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Buffer);
+		}
+
+		// Bind sampler images.
+		for (auto& [SetBinding, Image] : aImages) {
+			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Image, image::layout::SHADER_READ_ONLY_OPTIMAL);
+		}
+
+		return this->dispatch(aThreadGroupCount, DescriptorArray);
 	}
 
 	std::vector<VkDescriptorPoolSize> pipeline::descriptor_pool_sizes() const {
