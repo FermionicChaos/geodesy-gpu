@@ -981,11 +981,15 @@ namespace geodesy::gpu {
 
 	// Destructor
 	image::~image() {
-		PFN_vkDestroyImageView vkDestroyImageView = (PFN_vkDestroyImageView)this->Context->function_pointer("vkDestroyImageView");
-		PFN_vkDestroyImage vkDestroyImage = (PFN_vkDestroyImage)this->Context->function_pointer("vkDestroyImage");
-		vkDestroyImageView(Context->Handle, View, NULL);
-		vkDestroyImage(Context->Handle, Handle, NULL);
-		Context->free_memory(MemoryHandle);
+		if (View != VK_NULL_HANDLE) {
+			PFN_vkDestroyImageView vkDestroyImageView = (PFN_vkDestroyImageView)this->Context->function_pointer("vkDestroyImageView");
+			vkDestroyImageView(Context->Handle, View, NULL);
+		}
+		if (Handle != VK_NULL_HANDLE) {
+			PFN_vkDestroyImage vkDestroyImage = (PFN_vkDestroyImage)this->Context->function_pointer("vkDestroyImage");
+			vkDestroyImage(Context->Handle, Handle, NULL);
+			Context->free_memory(MemoryHandle);
+		}
 		// if (HostData != NULL) {
 		// 	stbi_image_free(HostData);
 		// }
