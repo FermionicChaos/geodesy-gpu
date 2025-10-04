@@ -29,7 +29,7 @@ namespace geodesy::gpu {
 
 	class image;
 
-	class buffer : public std::enable_shared_from_this<buffer> {
+	class buffer : public std::enable_shared_from_this<buffer>, public resource {
 	public:
 
 		friend class image;
@@ -76,7 +76,6 @@ namespace geodesy::gpu {
 			create_info(unsigned int aMemoryType, unsigned int aBufferUsage);
 		};
 
-		std::shared_ptr<context>	Context;
 		size_t 						ElementCount;
 
 		VkBufferCreateInfo 			CreateInfo;

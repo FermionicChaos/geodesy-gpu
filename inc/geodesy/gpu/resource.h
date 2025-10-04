@@ -5,14 +5,33 @@
 
 namespace geodesy::gpu {
 
-    class resource {
-    public:
+	class resource {
+	public:
 
-        std::shared_ptr<context>        Context;
-        
-        resource();
-        
-    };
+		// These are the base resources that the GPU and create/destroy.
+		enum type : unsigned int {
+			UNKNOWN,
+			FENCE,
+			SEMAPHORE,
+			COMMAND_BUFFER,
+			COMMAND_POOL,
+			BUFFER,
+			IMAGE,
+			ACCELERATION_STRUCTURE,
+			// SHADER,
+			DESCRIPTOR,
+			FRAMEBUFFER,
+			PIPELINE
+		};
+
+		std::shared_ptr<context>        Context;
+		type                            Type;
+
+	protected:
+		
+		resource();
+		
+	};
 
 }
 

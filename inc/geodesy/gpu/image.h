@@ -16,8 +16,7 @@
 
 namespace geodesy::gpu {
 
-	class image : public std::enable_shared_from_this<image>
-	,public resource
+	class image : public std::enable_shared_from_this<image>, public resource
 	// ,public io::file 
 	{
 	public:

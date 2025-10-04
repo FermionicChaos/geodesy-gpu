@@ -27,11 +27,10 @@ namespace geodesy::gpu {
 
 		// This class descriptor::array is intended to carry a series of descriptor sets designed specifically
 		// for binding to a specific pipeline. 
-		class array {
+		class array : public resource {
 		public:
 
 			std::vector<std::vector<VkDescriptorSetLayoutBinding>> 		DescriptorSetLayoutBinding;		// Contains map of available (set, binding) pairs which resources can be bound to.
-			std::shared_ptr<context> 									Context;						// Context for GPU managed objects.
 			VkDescriptorPool 											DescriptorPool;					// Descriptor Pool for managing descriptor sets.
 			std::vector<VkDescriptorSet> 								DescriptorSet;					// DS used for binding resource references to pipeline.
 			VkSampler 													SamplingMetadata;				// Sampling metadata for the descriptor set.

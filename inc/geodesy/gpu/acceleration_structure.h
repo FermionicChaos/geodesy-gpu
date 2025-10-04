@@ -7,14 +7,15 @@ This is a bottom level acceleration structure that maps out the geometry of a me
 */
 
 #include "config.h"
+
+#include "resource.h"
 #include "buffer.h"
 
 namespace geodesy::gpu {
-	
-	class acceleration_structure {
-	public:
 
-		std::shared_ptr<context> 			Context;
+	class acceleration_structure : public resource {
+	public:
+	
 		std::shared_ptr<buffer>				Buffer;
 		std::shared_ptr<buffer> 			UpdateScratchBuffer;
 		std::shared_ptr<buffer> 			BuildScratchBuffer;

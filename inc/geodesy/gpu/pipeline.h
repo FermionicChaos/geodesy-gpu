@@ -33,7 +33,7 @@ namespace geodesy::gpu {
 
 	class framebuffer;
 
-	class pipeline : public std::enable_shared_from_this<pipeline> {
+	class pipeline : public std::enable_shared_from_this<pipeline>, public resource {
 	public:
 
 		// The point of these structure is a straightforward api to map vulkan managed resources,
@@ -220,7 +220,6 @@ namespace geodesy::gpu {
 		std::shared_ptr<create_info> 							CreateInfo;
 
 		// Pipline Construction.
-		std::shared_ptr<context>								Context;
 		std::vector<VkPipelineShaderStageCreateInfo> 			Stage;
 		VkPipelineBindPoint 									BindPoint;
 		VkPipelineLayout 										Layout;

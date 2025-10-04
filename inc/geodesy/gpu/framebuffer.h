@@ -9,12 +9,10 @@
 namespace geodesy::gpu {
 
 	// This class is used to interface actual resource attachements to a pipeline. Similar to descriptor sets.
-	class framebuffer {
+	class framebuffer : public resource {
 	public:
 
 		std::vector<VkClearValue> 	ClearValue;
-
-		std::shared_ptr<context> 	Context;
 		VkFramebuffer 				Handle;
 
 		framebuffer(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, std::vector<std::shared_ptr<image>> aImageAttachements, std::array<unsigned int, 3> aResolution);

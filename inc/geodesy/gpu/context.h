@@ -11,6 +11,15 @@
 #include "command_buffer.h"
 #include "command_pool.h"
 #include "command_batch.h"
+#include "buffer.h"
+#include "image.h"
+#include "shader.h"
+#include "descriptor.h"
+#include "framebuffer.h"
+#include "acceleration_structure.h"
+#include "pipeline.h"
+#include "framechain.h"
+#include "swapchain.h"
 
 namespace geodesy::gpu {
 

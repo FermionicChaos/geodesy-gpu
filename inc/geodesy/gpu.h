@@ -26,6 +26,7 @@
 // textures, and image outputs for rendering.
 #include "gpu/buffer.h"
 #include "gpu/image.h"
+#include "gpu/acceleration_structure.h"
 #include "gpu/shader.h" // Not Actually GPU Resource, no context required for creation.
 // ----- GPU Metaresources ----- //
 // Explanation of meta resources:
@@ -37,8 +38,10 @@
 // the objects they reference are destroyed.
 #include "gpu/descriptor.h"
 #include "gpu/framebuffer.h"
-#include "gpu/acceleration_structure.h"
 #include "gpu/pipeline.h"
+#include "gpu/framechain.h"
+#include "gpu/swapchain.h"
+#include "gpu/executable_call.h"
 #include "gpu/context.h"
 #include "gpu/instance.h"
 
