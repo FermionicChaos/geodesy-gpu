@@ -713,6 +713,9 @@ namespace geodesy::gpu {
 
 	pipeline::pipeline(std::shared_ptr<context> aContext, std::shared_ptr<raytracer> aRaytracer) : pipeline() {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)aContext->function_pointer("vkCreateRayTracingPipelinesKHR");
+		PFN_vkGetPhysicalDeviceProperties2 vkGetPhysicalDeviceProperties2 = (PFN_vkGetPhysicalDeviceProperties2)aContext->function_pointer("vkGetPhysicalDeviceProperties2");
+		PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)aContext->function_pointer("vkGetRayTracingShaderGroupHandlesKHR");
 
 		this->BindPoint				= VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR;
 		this->Context				= aContext;
@@ -829,8 +832,6 @@ namespace geodesy::gpu {
 			RTPCI.basePipelineIndex						= 0;
 			
 			// Requires loading function.
-			// TODO: Deferred Host Operations?
-			PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)aContext->function_pointer("vkCreateRayTracingPipelinesKHR");
 			Result = vkCreateRayTracingPipelinesKHR(aContext->Handle, VK_NULL_HANDLE, this->Cache, 1, &RTPCI, NULL, &this->Handle);
 		}
 
@@ -855,7 +856,6 @@ namespace geodesy::gpu {
 
 			// Get Shader Group Handles.
 			std::vector<uint8_t> ShaderGroupHandle(GroupCount * HandleSize);
-			PFN_vkGetRayTracingShaderGroupHandlesKHR vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)aContext->function_pointer("vkGetRayTracingShaderGroupHandlesKHR");
 			Result = vkGetRayTracingShaderGroupHandlesKHR(aContext->Handle, this->Handle, 0, GroupCount, HandleSize * GroupCount, ShaderGroupHandle.data());
 
 			// Get Shader Region Counts
@@ -1012,6 +1012,14 @@ namespace geodesy::gpu {
 	}
 
 	pipeline::~pipeline() {
+		PFN_vkDestroyPipeline vkDestroyPipeline = (PFN_vkDestroyPipeline)this->Context->function_pointer("vkDestroyPipeline");
+		PFN_vkDestroyPipelineCache vkDestroyPipelineCache = (PFN_vkDestroyPipelineCache)this->Context->function_pointer("vkDestroyPipelineCache");
+		PFN_vkDestroyPipelineLayout vkDestroyPipelineLayout = (PFN_vkDestroyPipelineLayout)this->Context->function_pointer("vkDestroyPipelineLayout");
+		PFN_vkDestroyDescriptorPool vkDestroyDescriptorPool = (PFN_vkDestroyDescriptorPool)this->Context->function_pointer("vkDestroyDescriptorPool");
+		PFN_vkDestroyDescriptorSetLayout vkDestroyDescriptorSetLayout = (PFN_vkDestroyDescriptorSetLayout)this->Context->function_pointer("vkDestroyDescriptorSetLayout");
+		PFN_vkDestroyShaderModule vkDestroyShaderModule = (PFN_vkDestroyShaderModule)this->Context->function_pointer("vkDestroyShaderModule");
+		PFN_vkDestroyRenderPass vkDestroyRenderPass = (PFN_vkDestroyRenderPass)this->Context->function_pointer("vkDestroyRenderPass");
+
 		// Delete all vulkan allocated resources.
 		if (this->Handle != VK_NULL_HANDLE) {
 			vkDestroyPipeline(this->Context->Handle, this->Handle, NULL);
@@ -1040,29 +1048,18 @@ namespace geodesy::gpu {
 		}		
 	}
 
-	void pipeline::begin(
-		std::shared_ptr<command_buffer> aCommandBuffer, 
-		std::shared_ptr<framebuffer> aFramebuffer, 
-		VkRect2D aRenderArea, 
-		VkSubpassContents aSubpassContents
-	) {
-		VkRenderPassBeginInfo RPBI{};
-		RPBI.sType				= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		RPBI.pNext				= NULL;
-		RPBI.renderPass			= this->RenderPass;
-		RPBI.framebuffer		= aFramebuffer->Handle;
-		RPBI.renderArea			= aRenderArea;
-		RPBI.clearValueCount	= aFramebuffer->ClearValue.size();
-		RPBI.pClearValues		= aFramebuffer->ClearValue.data();
-		vkCmdBeginRenderPass(aCommandBuffer->Handle, &RPBI, aSubpassContents);
-	}
-
 	void pipeline::bind(
 		std::shared_ptr<command_buffer> 		aCommandBuffer, 
 		std::vector<std::shared_ptr<buffer>> 	aVertexBuffer, 
 		std::shared_ptr<buffer> 				aIndexBuffer, 
 		std::shared_ptr<descriptor::array> 		aDescriptorArray
 	) {
+		// Load function pointers onto stack
+		PFN_vkCmdBindPipeline vkCmdBindPipeline = (PFN_vkCmdBindPipeline)this->Context->function_pointer("vkCmdBindPipeline");
+		PFN_vkCmdBindDescriptorSets vkCmdBindDescriptorSets = (PFN_vkCmdBindDescriptorSets)this->Context->function_pointer("vkCmdBindDescriptorSets");
+		PFN_vkCmdBindVertexBuffers vkCmdBindVertexBuffers = (PFN_vkCmdBindVertexBuffers)this->Context->function_pointer("vkCmdBindVertexBuffers");
+		PFN_vkCmdBindIndexBuffer vkCmdBindIndexBuffer = (PFN_vkCmdBindIndexBuffer)this->Context->function_pointer("vkCmdBindIndexBuffer");
+		// Bind resources to pipeline.
 		vkCmdBindPipeline(aCommandBuffer->Handle, this->BindPoint, this->Handle);
 		if ((aDescriptorArray != nullptr) ? (aDescriptorArray->DescriptorSet.size() > 0) : false) {
 			vkCmdBindDescriptorSets(aCommandBuffer->Handle, this->BindPoint, this->Layout, 0, aDescriptorArray->DescriptorSet.size(), aDescriptorArray->DescriptorSet.data(), 0, NULL);
@@ -1081,8 +1078,22 @@ namespace geodesy::gpu {
 		}
 	}
 
-	void pipeline::end(std::shared_ptr<command_buffer> aCommandBuffer) {
-		vkCmdEndRenderPass(aCommandBuffer->Handle);
+	void pipeline::begin(
+		std::shared_ptr<command_buffer> aCommandBuffer, 
+		std::shared_ptr<framebuffer> aFramebuffer, 
+		VkRect2D aRenderArea, 
+		VkSubpassContents aSubpassContents
+	) {
+		PFN_vkCmdBeginRenderPass vkCmdBeginRenderPass = (PFN_vkCmdBeginRenderPass)this->Context->function_pointer("vkCmdBeginRenderPass");
+		VkRenderPassBeginInfo RPBI{};
+		RPBI.sType				= VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		RPBI.pNext				= NULL;
+		RPBI.renderPass			= this->RenderPass;
+		RPBI.framebuffer		= aFramebuffer->Handle;
+		RPBI.renderArea			= aRenderArea;
+		RPBI.clearValueCount	= aFramebuffer->ClearValue.size();
+		RPBI.pClearValues		= aFramebuffer->ClearValue.data();
+		vkCmdBeginRenderPass(aCommandBuffer->Handle, &RPBI, aSubpassContents);
 	}
 
 	void pipeline::rasterize(
@@ -1092,6 +1103,8 @@ namespace geodesy::gpu {
 		std::shared_ptr<buffer> 									aIndexBuffer,
 		std::shared_ptr<descriptor::array> 							aDescriptorArray
 	) {
+		PFN_vkCmdDrawIndexed vkCmdDrawIndexed = (PFN_vkCmdDrawIndexed)this->Context->function_pointer("vkCmdDrawIndexed");
+		PFN_vkCmdDraw vkCmdDraw = (PFN_vkCmdDraw)this->Context->function_pointer("vkCmdDraw");
 		std::shared_ptr<rasterizer> Rasterizer = std::dynamic_pointer_cast<rasterizer>(this->CreateInfo);
 		VkRect2D RenderArea = { { 0, 0 }, { Rasterizer->Resolution[0], Rasterizer->Resolution[1] } };
 		this->begin(aCommandBuffer, aFramebuffer, RenderArea);
@@ -1103,6 +1116,30 @@ namespace geodesy::gpu {
 			vkCmdDraw(aCommandBuffer->Handle, aVertexBuffer[0]->ElementCount, 1, 0, 0);
 		}
 		this->end(aCommandBuffer);
+	}
+
+	void pipeline::end(std::shared_ptr<command_buffer> aCommandBuffer) {
+		PFN_vkCmdEndRenderPass vkCmdEndRenderPass = (PFN_vkCmdEndRenderPass)this->Context->function_pointer("vkCmdEndRenderPass");
+		vkCmdEndRenderPass(aCommandBuffer->Handle);
+	}
+
+	void pipeline::raytrace(
+		std::shared_ptr<command_buffer> 							aCommandBuffer,
+		std::shared_ptr<descriptor::array> 							aDescriptorArray,
+		std::array<unsigned int, 3> 								aResolution
+	) {
+		PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR)this->Context->function_pointer("vkCmdTraceRaysKHR");
+		this->bind(aCommandBuffer, {}, nullptr, aDescriptorArray);
+		vkCmdTraceRaysKHR(
+			aCommandBuffer->Handle, 
+			&this->ShaderBindingTable.Raygen,
+			&this->ShaderBindingTable.Miss,
+			&this->ShaderBindingTable.Hit,
+			&this->ShaderBindingTable.Callable,
+			aResolution[0], 
+			aResolution[1], 
+			aResolution[2]
+		);
 	}
 
 	VkResult pipeline::rasterize(
@@ -1117,7 +1154,7 @@ namespace geodesy::gpu {
 		auto CommandBuffer = CommandPool->allocate_command_buffer();
 
 		Result = CommandBuffer->begin();
-		this->draw(CommandBuffer, aFramebuffer, aVertexBuffer, aIndexBuffer, aDescriptorArray);
+		this->rasterize(CommandBuffer, aFramebuffer, aVertexBuffer, aIndexBuffer, aDescriptorArray);
 		Result = CommandBuffer->end();
 
 		Result = this->Context->execute_and_wait(device::operation::GRAPHICS, CommandBuffer);
@@ -1156,32 +1193,13 @@ namespace geodesy::gpu {
 
 		// Write Command Buffer here.
 		Result = CommandBuffer->begin();
-		this->draw(CommandBuffer, Framebuffer, aVertexBuffer, aIndexBuffer, DescriptorArray);
+		this->rasterize(CommandBuffer, Framebuffer, aVertexBuffer, aIndexBuffer, DescriptorArray);
 		Result = CommandBuffer->end();
 
 		// Execute Command Buffer here.
 		Result = this->Context->execute_and_wait(device::operation::GRAPHICS, CommandBuffer);
 
 		return Result;
-	}
-
-	void pipeline::raytrace(
-		std::shared_ptr<command_buffer> 							aCommandBuffer,
-		std::shared_ptr<descriptor::array> 							aDescriptorArray,
-		std::array<unsigned int, 3> 								aResolution
-	) {
-		PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR)this->Context->function_pointer("vkCmdTraceRaysKHR");
-		this->bind(aCommandBuffer, {}, nullptr, aDescriptorArray);
-		vkCmdTraceRaysKHR(
-			aCommandBuffer->Handle, 
-			&this->ShaderBindingTable.Raygen,
-			&this->ShaderBindingTable.Miss,
-			&this->ShaderBindingTable.Hit,
-			&this->ShaderBindingTable.Callable,
-			aResolution[0], 
-			aResolution[1], 
-			aResolution[2]
-		);
 	}
 
 	VkResult pipeline::raytrace(
@@ -1230,6 +1248,7 @@ namespace geodesy::gpu {
 
 	VkResult pipeline::shader_stage_create(std::shared_ptr<create_info> aCreateInfo) {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateShaderModule vkCreateShaderModule = (PFN_vkCreateShaderModule)this->Context->function_pointer("vkCreateShaderModule");
 		// Generate GPU Shader Modules.
 		this->Stage = std::vector<VkPipelineShaderStageCreateInfo>(aCreateInfo->Shader.size());
 		for (size_t i = 0; i < this->Stage.size(); i++) {
@@ -1250,6 +1269,10 @@ namespace geodesy::gpu {
 
 	VkResult pipeline::create_pipeline_layout(std::vector<std::vector<VkDescriptorSetLayoutBinding>> aDescriptorSetLayoutBinding) {
 		VkResult Result = VK_SUCCESS;
+		PFN_vkCreateDescriptorSetLayout vkCreateDescriptorSetLayout = (PFN_vkCreateDescriptorSetLayout)this->Context->function_pointer("vkCreateDescriptorSetLayout");
+		PFN_vkCreateDescriptorPool vkCreateDescriptorPool = (PFN_vkCreateDescriptorPool)this->Context->function_pointer("vkCreateDescriptorPool");
+		PFN_vkCreatePipelineLayout vkCreatePipelineLayout = (PFN_vkCreatePipelineLayout)this->Context->function_pointer("vkCreatePipelineLayout");
+
 		// Generate Descriptor Set Layouts from Meta Data gathered from shaders.
 		if (Result == VK_SUCCESS) {
 			this->DescriptorSetLayout = std::vector<VkDescriptorSetLayout>(aDescriptorSetLayoutBinding.size());
