@@ -30,10 +30,25 @@ namespace geodesy::gpu {
 
 	swapchain::swapchain(std::shared_ptr<context> aContext, VkSurfaceKHR aSurface, const create_info& aCreateInfo, VkSwapchainKHR aOldSwapchain) {
 		VkResult Result = VK_SUCCESS;
-
+		PFN_vkGetPhysicalDeviceSurfaceSupportKHR vkGetPhysicalDeviceSurfaceSupportKHR = (PFN_vkGetPhysicalDeviceSurfaceSupportKHR)aContext->function_pointer("vkGetPhysicalDeviceSurfaceSupportKHR");
 		PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR vkGetPhysicalDeviceSurfaceCapabilitiesKHR = (PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)aContext->function_pointer("vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
 		PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = (PFN_vkCreateSwapchainKHR)aContext->function_pointer("vkCreateSwapchainKHR");
 		PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR = (PFN_vkGetSwapchainImagesKHR)aContext->function_pointer("vkGetSwapchainImagesKHR");
+
+		// Find Present Queue in aContext
+		VkBool32 SupportsPresent = VK_FALSE;
+		for (auto& [Op, Q] : aContext->Queue) {
+			// Test if this queue supports present.
+			vkGetPhysicalDeviceSurfaceSupportKHR(aContext->Device->Handle, Q.FamilyIndex, aSurface, &SupportsPresent);
+			if (SupportsPresent == VK_TRUE) {
+				this->PresentationQueue = Q.Handle;
+				break;
+			}
+		}
+
+		if (SupportsPresent == VK_FALSE) {
+			throw std::runtime_error("Failed to find a queue that supports presentation to the given surface.");
+		}
 
 		VkSurfaceCapabilitiesKHR SurfaceCapabilities;
 		Result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(aContext->Device->Handle, aSurface, &SurfaceCapabilities);
@@ -123,19 +138,19 @@ namespace geodesy::gpu {
 	VkResult swapchain::next_frame(VkSemaphore aPresentFrameSemaphore, VkSemaphore aNextFrameSemaphore, VkFence aNextFrameFence) {
 		VkResult ReturnValue = VK_SUCCESS;
 
-		// // Before acquiring next image, present current image.
-		// if (aPresentFrameSemaphore != VK_NULL_HANDLE){
-		// 	VkPresentInfoKHR PresentInfo{};
-		// 	PresentInfo.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-		// 	PresentInfo.pNext				= NULL;
-		// 	PresentInfo.waitSemaphoreCount	= 1;
-		// 	PresentInfo.pWaitSemaphores		= &aPresentFrameSemaphore;
-		// 	PresentInfo.swapchainCount		= 1;
-		// 	PresentInfo.pSwapchains			= &Handle;
-		// 	PresentInfo.pImageIndices		= &DrawIndex;
-		// 	// Present image to screen.
-		// 	ReturnValue = vkQueuePresentKHR(Context->Queue[device::operation::PRESENT], &PresentInfo);
-		// }
+		// Before acquiring next image, present current image.
+		if (aPresentFrameSemaphore != VK_NULL_HANDLE){
+			VkPresentInfoKHR PresentInfo{};
+			PresentInfo.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+			PresentInfo.pNext				= NULL;
+			PresentInfo.waitSemaphoreCount	= 1;
+			PresentInfo.pWaitSemaphores		= &aPresentFrameSemaphore;
+			PresentInfo.swapchainCount		= 1;
+			PresentInfo.pSwapchains			= &Handle;
+			PresentInfo.pImageIndices		= &DrawIndex;
+			// Present image to screen.
+			ReturnValue = vkQueuePresentKHR(this->PresentationQueue, &PresentInfo);
+		}
 
 		// Set previous draw index for read operations.
 		ReadIndex = DrawIndex;

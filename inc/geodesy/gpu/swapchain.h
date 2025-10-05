@@ -63,6 +63,7 @@ namespace geodesy::gpu {
 		VkSurfaceKHR 									Surface;
 		VkSwapchainCreateInfoKHR						CreateInfo;
 		VkSwapchainKHR									Handle;
+		VkQueue 										PresentationQueue;
 
 		swapchain(std::shared_ptr<context> aContext, VkSurfaceKHR aSurface, const create_info& aCreateInfo, VkSwapchainKHR aOldSwapchain = VK_NULL_HANDLE);
 		~swapchain();
