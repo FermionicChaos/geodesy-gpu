@@ -191,6 +191,7 @@ namespace geodesy::gpu {
 			// NOTE: This assumes the present operation has completed when we call next_frame again
 			// In a real implementation, you might want to use fences to track completion
 			this->SemaphoreQueue.push(this->AcquirePresentFrameSemaphore);
+			this->AcquirePresentFrameSemaphore = std::make_pair(nullptr, nullptr);
 		}
 
 		// // Get next semaphore pair from queue
