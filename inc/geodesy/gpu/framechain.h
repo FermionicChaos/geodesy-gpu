@@ -25,9 +25,11 @@ namespace geodesy::gpu {
 
 		framechain();
 		
-		// This function is special because it presents, and acquires next frame.
-		virtual VkResult next_frame(VkSemaphore aPresentFrameSemaphore = VK_NULL_HANDLE, VkSemaphore aNextFrameSemaphore = VK_NULL_HANDLE, VkFence aNextFrameFence = VK_NULL_HANDLE);
-		virtual VkResult present_frame_now();
+		// Returns two semaphores:
+		// First: The semaphore used to wait for the next frame to be ready for reading.
+		// Second: The semaphore that will be used to signal presentation when rendering is complete.
+		virtual VkResult next_frame();
+		virtual std::pair<std::shared_ptr<semaphore>, std::shared_ptr<semaphore>> get_acquire_present_semaphore_pair();
 
 	};
 

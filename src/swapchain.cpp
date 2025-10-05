@@ -29,7 +29,15 @@ namespace geodesy::gpu {
 		this->Clipped 			= aCreateInfo.clipped;		
 	}
 
-	swapchain::swapchain(std::shared_ptr<context> aContext, VkSurfaceKHR aSurface, const create_info& aCreateInfo, VkSwapchainKHR aOldSwapchain) {
+	swapchain::swapchain() : framechain() {
+		this->Surface = VK_NULL_HANDLE;
+		this->CreateInfo = {};
+		this->Handle = VK_NULL_HANDLE;
+		this->PresentationQueue = VK_NULL_HANDLE;
+		this->AcquirePresentFrameSemaphore = std::make_pair(nullptr, nullptr);
+	}
+
+	swapchain::swapchain(std::shared_ptr<context> aContext, VkSurfaceKHR aSurface, const create_info& aCreateInfo, VkSwapchainKHR aOldSwapchain) : framechain() {
 		VkResult Result = VK_SUCCESS;
 		// Load physical device functions from instance (they operate on VkPhysicalDevice)
 		PFN_vkGetPhysicalDeviceSurfaceSupportKHR vkGetPhysicalDeviceSurfaceSupportKHR = (PFN_vkGetPhysicalDeviceSurfaceSupportKHR)aContext->Instance->function_pointer("vkGetPhysicalDeviceSurfaceSupportKHR");
@@ -103,7 +111,12 @@ namespace geodesy::gpu {
 				this->Image[i]["Color"]->transition(image::layout::LAYOUT_UNDEFINED, image::layout::PRESENT_SRC_KHR);
 				this->Image[i]["Color"]->View = this->Image[i]["Color"]->view();
 			}
+			// Create Semaphores for acquiring and rendering frames.
+			for (std::size_t i = 0; i < ImageList.size(); i++) {
+				this->SemaphoreQueue.push(std::make_pair(aContext->create<semaphore>(), aContext->create<semaphore>()));
+			}
 		}
+
 	}
 
 	swapchain::~swapchain() {
@@ -142,30 +155,71 @@ namespace geodesy::gpu {
 		return ImageCreateInfo;
 	}
 
-	VkResult swapchain::next_frame(VkSemaphore aPresentFrameSemaphore, VkSemaphore aNextFrameSemaphore, VkFence aNextFrameFence) {
-		VkResult ReturnValue = VK_SUCCESS;
+	VkResult swapchain::next_frame() {
+		VkResult Result = VK_SUCCESS;
 		PFN_vkQueuePresentKHR vkQueuePresentKHR = (PFN_vkQueuePresentKHR)Context->function_pointer("vkQueuePresentKHR");
+		// PFN_vkQueueWaitIdle vkQueueWaitIdle = (PFN_vkQueueWaitIdle)Context->function_pointer("vkQueueWaitIdle");
 		PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR = (PFN_vkAcquireNextImageKHR)Context->function_pointer("vkAcquireNextImageKHR");
 
-		// Before acquiring next image, present current image.
-		if (aPresentFrameSemaphore != VK_NULL_HANDLE){
+		// Present previous frame if we have a valid present semaphore
+		if (this->AcquirePresentFrameSemaphore.second != nullptr) {
 			VkPresentInfoKHR PresentInfo{};
 			PresentInfo.sType				= VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 			PresentInfo.pNext				= NULL;
 			PresentInfo.waitSemaphoreCount	= 1;
-			PresentInfo.pWaitSemaphores		= &aPresentFrameSemaphore;
+			PresentInfo.pWaitSemaphores		= &this->AcquirePresentFrameSemaphore.second->Handle;
 			PresentInfo.swapchainCount		= 1;
-			PresentInfo.pSwapchains			= &Handle;
-			PresentInfo.pImageIndices		= &DrawIndex;
-			// Present image to screen.
-			ReturnValue = vkQueuePresentKHR(this->PresentationQueue, &PresentInfo);
+			PresentInfo.pSwapchains			= &this->Handle;
+			PresentInfo.pImageIndices		= &this->DrawIndex;
+			
+			// Present current image to screen
+			Result = vkQueuePresentKHR(this->PresentationQueue, &PresentInfo);
+			if (Result != VK_SUCCESS) {
+				this->SemaphoreQueue.push(this->AcquirePresentFrameSemaphore);
+				return Result;
+			}
+
+			// // Ensure presentation is complete before reusing semaphores
+			// Result = vkQueueWaitIdle(this->PresentationQueue);
+			// if (Result != VK_SUCCESS) {
+			// 	// Handle wait errors
+			// 	return Result;
+			// }
+			
+			// Return used semaphore pair to queue for reuse 
+			// NOTE: This assumes the present operation has completed when we call next_frame again
+			// In a real implementation, you might want to use fences to track completion
+			this->SemaphoreQueue.push(this->AcquirePresentFrameSemaphore);
 		}
 
-		// Set previous draw index for read operations.
-		ReadIndex = DrawIndex;
+		// // Get next semaphore pair from queue
+		// if (this->SemaphoreQueue.empty()) {
+		// 	return VK_NOT_READY; // No available semaphores, should not happen if used correctly
+		// }
+		
+		// Acquire new semaphore pair
+		this->AcquirePresentFrameSemaphore = this->SemaphoreQueue.front();
+		this->SemaphoreQueue.pop();
 
-		// Acquire new image.
-		return vkAcquireNextImageKHR(Context->Handle, Handle, UINT64_MAX, aNextFrameSemaphore, aNextFrameFence, &DrawIndex);
+		// Set previous draw index for read operations
+		this->ReadIndex = this->DrawIndex;
+
+		// Acquire next swapchain image
+		Result = vkAcquireNextImageKHR(Context->Handle, this->Handle, UINT64_MAX, this->AcquirePresentFrameSemaphore.first->Handle, VK_NULL_HANDLE, &this->DrawIndex);
+		if (Result != VK_SUCCESS) {
+			// Return semaphore, acquire failed to get next image.
+			this->SemaphoreQueue.push(this->AcquirePresentFrameSemaphore);
+			return Result;
+		}
+
+		// Return semaphore pair:
+		// .first  = image acquisition semaphore (signaled when image is ready for rendering)
+		// .second = render completion semaphore (signal this when rendering is complete)
+		return Result;
+	}
+
+	std::pair<std::shared_ptr<semaphore>, std::shared_ptr<semaphore>> swapchain::get_acquire_present_semaphore_pair() {
+		return this->AcquirePresentFrameSemaphore;
 	}
 
 }

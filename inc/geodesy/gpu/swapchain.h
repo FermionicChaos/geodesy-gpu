@@ -58,19 +58,21 @@ namespace geodesy::gpu {
 			create_info(VkSwapchainCreateInfoKHR aCreateInfo, float aFrameRate);
 		};
 
-		std::queue<std::shared_ptr<semaphore>> 			NextFrameSemaphoreList;
-		std::vector<std::shared_ptr<semaphore>> 		PresentFrameSemaphoreList;
-		VkSurfaceKHR 									Surface;
-		VkSwapchainCreateInfoKHR						CreateInfo;
-		VkSwapchainKHR									Handle;
-		VkQueue 										PresentationQueue;
+		VkSurfaceKHR 																			Surface;
+		VkSwapchainCreateInfoKHR																CreateInfo;
+		VkSwapchainKHR 																			Handle;
+		VkQueue 																				PresentationQueue;
+		std::queue<std::pair<std::shared_ptr<semaphore>, std::shared_ptr<semaphore>>> 			SemaphoreQueue;
+		std::pair<std::shared_ptr<semaphore>, std::shared_ptr<semaphore>> 						AcquirePresentFrameSemaphore;
 
+		swapchain();
 		swapchain(std::shared_ptr<context> aContext, VkSurfaceKHR aSurface, const create_info& aCreateInfo, VkSwapchainKHR aOldSwapchain = VK_NULL_HANDLE);
 		~swapchain();
 
 		VkImageCreateInfo image_create_info() const;
 
-		VkResult next_frame(VkSemaphore aPresentFrameSemaphore = VK_NULL_HANDLE, VkSemaphore aNextFrameSemaphore = VK_NULL_HANDLE, VkFence aNextFrameFence = VK_NULL_HANDLE) override;
+		VkResult next_frame() override;
+		std::pair<std::shared_ptr<semaphore>, std::shared_ptr<semaphore>> get_acquire_present_semaphore_pair() override;
 
 	};
 
