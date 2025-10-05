@@ -176,6 +176,7 @@ namespace geodesy::gpu {
 			Result = vkQueuePresentKHR(this->PresentationQueue, &PresentInfo);
 			if (Result != VK_SUCCESS) {
 				this->SemaphoreQueue.push(this->AcquirePresentFrameSemaphore);
+				this->AcquirePresentFrameSemaphore = std::make_pair(nullptr, nullptr);
 				return Result;
 			}
 
@@ -209,6 +210,7 @@ namespace geodesy::gpu {
 		if (Result != VK_SUCCESS) {
 			// Return semaphore, acquire failed to get next image.
 			this->SemaphoreQueue.push(this->AcquirePresentFrameSemaphore);
+			this->AcquirePresentFrameSemaphore = std::make_pair(nullptr, nullptr);
 			return Result;
 		}
 
