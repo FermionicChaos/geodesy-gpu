@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include <geodesy/gpu/context.h>
+#include <geodesy/gpu/instance.h>
 
 namespace geodesy::gpu {
 
@@ -30,12 +31,14 @@ namespace geodesy::gpu {
 
 	swapchain::swapchain(std::shared_ptr<context> aContext, VkSurfaceKHR aSurface, const create_info& aCreateInfo, VkSwapchainKHR aOldSwapchain) {
 		VkResult Result = VK_SUCCESS;
-		PFN_vkGetPhysicalDeviceSurfaceSupportKHR vkGetPhysicalDeviceSurfaceSupportKHR = (PFN_vkGetPhysicalDeviceSurfaceSupportKHR)aContext->function_pointer("vkGetPhysicalDeviceSurfaceSupportKHR");
-		PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR vkGetPhysicalDeviceSurfaceCapabilitiesKHR = (PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)aContext->function_pointer("vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
+		// Load physical device functions from instance (they operate on VkPhysicalDevice)
+		PFN_vkGetPhysicalDeviceSurfaceSupportKHR vkGetPhysicalDeviceSurfaceSupportKHR = (PFN_vkGetPhysicalDeviceSurfaceSupportKHR)aContext->Instance->function_pointer("vkGetPhysicalDeviceSurfaceSupportKHR");
+		PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR vkGetPhysicalDeviceSurfaceCapabilitiesKHR = (PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR)aContext->Instance->function_pointer("vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
+		// Load device functions from device context (they operate on VkDevice)
 		PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = (PFN_vkCreateSwapchainKHR)aContext->function_pointer("vkCreateSwapchainKHR");
 		PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR = (PFN_vkGetSwapchainImagesKHR)aContext->function_pointer("vkGetSwapchainImagesKHR");
 
-		// Find Present Queue in aContext
+		// Find Present Queue in aContext	
 		VkBool32 SupportsPresent = VK_FALSE;
 		for (auto& [Op, Q] : aContext->Queue) {
 			// Test if this queue supports present.
@@ -52,6 +55,9 @@ namespace geodesy::gpu {
 
 		VkSurfaceCapabilitiesKHR SurfaceCapabilities;
 		Result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(aContext->Device->Handle, aSurface, &SurfaceCapabilities);
+		if (Result != VK_SUCCESS) {
+			throw std::runtime_error("Failed to get surface capabilities.");
+		}
 		
 		this->Context                             	= aContext;
 		this->Surface 								= aSurface;
@@ -88,6 +94,7 @@ namespace geodesy::gpu {
 			Result = vkGetSwapchainImagesKHR(aContext->Handle, this->Handle, &ImageCount, NULL);
 			std::vector<VkImage> ImageList(ImageCount);
 			Result = vkGetSwapchainImagesKHR(aContext->Handle, this->Handle, &ImageCount, ImageList.data());
+			this->Image = std::vector<std::map<std::string, std::shared_ptr<image>>>(ImageCount);
 			for (std::size_t i = 0; i < ImageList.size(); i++) {
 				this->Image[i]["Color"] = geodesy::make<image>();
 				this->Image[i]["Color"]->Context = aContext;
@@ -137,6 +144,8 @@ namespace geodesy::gpu {
 
 	VkResult swapchain::next_frame(VkSemaphore aPresentFrameSemaphore, VkSemaphore aNextFrameSemaphore, VkFence aNextFrameFence) {
 		VkResult ReturnValue = VK_SUCCESS;
+		PFN_vkQueuePresentKHR vkQueuePresentKHR = (PFN_vkQueuePresentKHR)Context->function_pointer("vkQueuePresentKHR");
+		PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR = (PFN_vkAcquireNextImageKHR)Context->function_pointer("vkAcquireNextImageKHR");
 
 		// Before acquiring next image, present current image.
 		if (aPresentFrameSemaphore != VK_NULL_HANDLE){
