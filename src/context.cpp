@@ -119,7 +119,7 @@ namespace geodesy::gpu {
 	}
 
 	void* context::function_pointer(std::string aFunctionName) const {
-		return vkGetDeviceProcAddr(this->Handle, aFunctionName.c_str());
+		return (void*)vkGetDeviceProcAddr(this->Handle, aFunctionName.c_str());
 	}
 
 	VkMemoryRequirements context::get_buffer_memory_requirements(VkBuffer aBufferHandle) const {

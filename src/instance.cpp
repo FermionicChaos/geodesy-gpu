@@ -98,7 +98,7 @@ namespace geodesy::gpu {
 	}
 
 	void* instance::function_pointer(std::string aFunctionName) const {
-		return vkGetInstanceProcAddr(this->Handle, aFunctionName.c_str());
+		return (void*)vkGetInstanceProcAddr(this->Handle, aFunctionName.c_str());
 	}
 	
 	std::vector<std::shared_ptr<gpu::device>> instance::get_devices() {
