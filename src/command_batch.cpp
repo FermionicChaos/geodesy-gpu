@@ -14,6 +14,14 @@ namespace geodesy::gpu {
 
 	}
 
+	std::shared_ptr<command_buffer>& command_batch::operator[](size_t aIndex) {
+		return this->CommandBufferList[aIndex];
+	}
+
+	const std::shared_ptr<command_buffer>& command_batch::operator[](size_t aIndex) const {
+		return this->CommandBufferList[aIndex];
+	}
+
 	void command_batch::depends_on(std::shared_ptr<semaphore> aSemaphore, VkPipelineStageFlags aWaitStage, std::shared_ptr<command_batch> aWaitBatch) {
 		// Add to wait list.
 		this->WaitSemaphoreList.push_back(aSemaphore);

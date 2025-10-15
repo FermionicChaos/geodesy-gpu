@@ -142,7 +142,7 @@ namespace geodesy::gpu {
 	VkResult buffer::copy(std::shared_ptr<buffer> aSourceData, std::vector<VkBufferCopy> aRegionList) {
 		VkResult Result = VK_SUCCESS;
 		auto CommandPool = Context->create<command_pool>(device::operation::TRANSFER);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		// Record Command Buffer
 		Result = CommandBuffer->begin();
@@ -173,7 +173,7 @@ namespace geodesy::gpu {
 	VkResult buffer::copy(std::shared_ptr<image> aSourceData, std::vector<VkBufferImageCopy> aRegionList) {
 		VkResult Result = VK_SUCCESS;
 		auto CommandPool = Context->create<command_pool>(device::operation::TRANSFER);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		// Record Command Buffer
 		Result = CommandBuffer->begin();

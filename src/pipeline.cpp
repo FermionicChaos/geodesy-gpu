@@ -1245,7 +1245,7 @@ namespace geodesy::gpu {
 		VkResult Result = VK_SUCCESS;
 
 		auto CommandPool = this->Context->create<command_pool>(device::operation::GRAPHICS);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		Result = CommandBuffer->begin();
 		this->rasterize(CommandBuffer.get(), aFramebuffer, aVertexBuffer, aIndexBuffer, aDescriptorArray);
@@ -1271,7 +1271,7 @@ namespace geodesy::gpu {
 
 		// Allocated GPU Resources needed to execute.
 		auto CommandPool = this->Context->create<command_pool>(device::operation::GRAPHICS);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 		auto Framebuffer = this->Context->create<framebuffer>(this->shared_from_this(), aImage, Rasterizer->Resolution);
 		auto DescriptorArray = this->Context->create<descriptor::array>(this->shared_from_this());
 
@@ -1315,7 +1315,7 @@ namespace geodesy::gpu {
 
 		// Allocated GPU Resources needed to execute.
 		auto CommandPool = this->Context->create<command_pool>(device::operation::COMPUTE);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		Result = CommandBuffer->begin();
 		this->dispatch(CommandBuffer.get(), aThreadGroupCount, aDescriptorArray);

@@ -12,16 +12,12 @@ namespace geodesy::gpu {
 		this->Handle = VK_NULL_HANDLE;
 	}
 
-	command_buffer::command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBuffer aHandle) : command_buffer() {
-		this->Context = aContext;
-		this->CommandPool = aCommandPool;
-		this->Handle = aHandle;
-	}
-
 	command_buffer::command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBufferLevel aLevel) : command_buffer() {
 		VkResult Result = VK_SUCCESS;
 		VkCommandBufferAllocateInfo CBAI = {};
-		PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = (PFN_vkAllocateCommandBuffers)this->Context->function_pointer("vkAllocateCommandBuffers");
+		PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = (PFN_vkAllocateCommandBuffers)aContext->function_pointer("vkAllocateCommandBuffers");
+		this->Context 					= aContext;
+		this->CommandPool 				= aCommandPool;
 		CBAI.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		CBAI.pNext						= NULL;
 		CBAI.commandPool				= aCommandPool->Handle;

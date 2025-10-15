@@ -111,7 +111,7 @@ namespace geodesy::gpu {
 			Barrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 
 			auto CommandPool = aContext->create<command_pool>(device::operation::GRAPHICS);
-			auto CommandBuffer = CommandPool->allocate_command_buffer();
+			auto CommandBuffer = CommandPool->create<command_buffer>();
 
 			// Record Command.
 			CommandBuffer->begin();
@@ -232,7 +232,7 @@ namespace geodesy::gpu {
 			Barrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
 
 			auto CommandPool = aContext->create<command_pool>(device::operation::GRAPHICS);
-			auto CommandBuffer = CommandPool->allocate_command_buffer();
+			auto CommandBuffer = CommandPool->create<command_buffer>();
 			const VkAccelerationStructureBuildRangeInfoKHR* pBuildRangeInfo = &ASBRI;
 
 			// Record Command.

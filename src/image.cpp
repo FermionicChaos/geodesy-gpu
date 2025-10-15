@@ -1102,7 +1102,7 @@ namespace geodesy::gpu {
 	VkResult image::copy(std::shared_ptr<buffer> aSourceData, std::vector<VkBufferImageCopy> aRegionList) {
 		VkResult Result = VK_SUCCESS;
 		auto CommandPool = Context->create<command_pool>(device::operation::TRANSFER);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		// Record command buffer.
 		Result = CommandBuffer->begin();
@@ -1129,7 +1129,7 @@ namespace geodesy::gpu {
 	VkResult image::copy(std::shared_ptr<image> aSourceData, std::vector<VkImageCopy> aRegionList) {
 		VkResult Result = VK_SUCCESS;
 		auto CommandPool = Context->create<command_pool>(device::operation::TRANSFER);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		// Record command buffer.
 		Result = CommandBuffer->begin();
@@ -1160,7 +1160,7 @@ namespace geodesy::gpu {
 			aArrayLayerStart, aArrayLayerCount			
 		);
 		auto CommandPool = Context->create<command_pool>(device::operation::TRANSFER);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		// Record Command Buffer
 		Result = CommandBuffer->begin();
@@ -1183,7 +1183,7 @@ namespace geodesy::gpu {
 	VkResult image::clear(VkClearColorValue aClearColor, image::layout aCurrentImageLayout, uint32_t aStartingArrayLayer, uint32_t aArrayLayerCount) {
 		VkResult Result = VK_SUCCESS;
 		auto CommandPool = Context->create<command_pool>(device::operation::GRAPHICS);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		// Record command buffer.
 		Result = CommandBuffer->begin();
@@ -1199,7 +1199,7 @@ namespace geodesy::gpu {
 	VkResult image::clear_depth(VkClearDepthStencilValue aClearDepthStencil, image::layout aCurrentImageLayout, uint32_t aStartingArrayLayer, uint32_t aArrayLayerCount) {
 		VkResult Result = VK_SUCCESS;
 		auto CommandPool = Context->create<command_pool>(device::operation::GRAPHICS);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		// Record command buffer.
 		Result = CommandBuffer->begin();
@@ -1222,7 +1222,7 @@ namespace geodesy::gpu {
 		this->transition(aCurrentLayout, layout::TRANSFER_DST_OPTIMAL);
 
 		auto CommandPool = Context->create<command_pool>(device::operation::GRAPHICS);
-		auto CommandBuffer = CommandPool->allocate_command_buffer();
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		VkOffset3D d = { (int32_t)this->CreateInfo.extent.width, (int32_t)this->CreateInfo.extent.height, (int32_t)this->CreateInfo.extent.depth };
 

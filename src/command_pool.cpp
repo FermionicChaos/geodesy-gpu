@@ -35,30 +35,4 @@ namespace geodesy::gpu {
 		vkDestroyCommandPool(this->Context->Handle, this->Handle, NULL);
 	}	
 	
-	std::shared_ptr<command_buffer> command_pool::allocate_command_buffer(VkCommandBufferLevel aLevel) {
-		std::vector<std::shared_ptr<command_buffer>> CB = this->allocate_command_buffers(1, aLevel);
-		return CB.size() > 0 ? CB[0] : nullptr;
-	}
-	
-	std::vector<std::shared_ptr<command_buffer>> command_pool::allocate_command_buffers(size_t aCount, VkCommandBufferLevel aLevel) {
-		VkResult Result = VK_SUCCESS;
-		std::vector<std::shared_ptr<command_buffer>> CommandBuffers;
-		std::vector<VkCommandBuffer> CB(aCount, VK_NULL_HANDLE);
-		VkCommandBufferAllocateInfo CBAI = {};
-		PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = (PFN_vkAllocateCommandBuffers)this->Context->function_pointer("vkAllocateCommandBuffers");
-		CBAI.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		CBAI.pNext						= NULL;
-		CBAI.commandPool				= this->Handle;
-		CBAI.level						= aLevel;
-		CBAI.commandBufferCount			= aCount;
-		Result = vkAllocateCommandBuffers(this->Context->Handle, &CBAI, CB.data());
-		if (Result == VK_SUCCESS) {
-			for (auto& buffer : CB) {
-				CommandBuffers.push_back(geodesy::make<command_buffer>(this->Context, this->shared_from_this(), buffer));
-			}
-		}
-		return CommandBuffers;
-	}
-	
-	
 }

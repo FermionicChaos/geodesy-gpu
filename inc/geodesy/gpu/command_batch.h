@@ -26,6 +26,10 @@ namespace geodesy::gpu {
 		command_batch(std::vector<std::shared_ptr<command_buffer>> aCommandBufferList);
 		~command_batch();
 
+		// Create subscript operators for command buffer access.
+		std::shared_ptr<command_buffer>& operator[](size_t aIndex);
+		const std::shared_ptr<command_buffer>& operator[](size_t aIndex) const;
+
 		void depends_on(std::shared_ptr<semaphore> aSemaphore, VkPipelineStageFlags aWaitStage, std::shared_ptr<command_batch> aWaitBatch);
 
 	};
