@@ -4,6 +4,13 @@
 
 namespace geodesy::gpu {
 
+	framebuffer::framebuffer() {
+		this->Context = nullptr;
+		this->Type = resource::type::FRAMEBUFFER;
+		this->ClearValue = {};
+		this->Handle = VK_NULL_HANDLE;
+	}
+
 	framebuffer::framebuffer(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, std::vector<std::shared_ptr<image>> aImageAttachements, std::array<unsigned int, 3> aResolution) {
 		PFN_vkCreateFramebuffer vkCreateFramebuffer = (PFN_vkCreateFramebuffer)aContext->function_pointer("vkCreateFramebuffer");
 		this->Context = aContext;

@@ -6,6 +6,7 @@ namespace geodesy::gpu {
 
 	command_pool::command_pool() {
 		this->Handle = VK_NULL_HANDLE;
+		this->Type = resource::type::COMMAND_POOL;
 	}
 
 	command_pool::command_pool(std::shared_ptr<context> aContext, unsigned int aOperation, VkCommandPoolCreateFlags aFlags) : command_pool() {

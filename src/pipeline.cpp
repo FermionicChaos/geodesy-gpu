@@ -615,6 +615,8 @@ namespace geodesy::gpu {
 	}
 
 	pipeline::pipeline() {
+		this->Context 			= nullptr;
+		this->Type				= resource::type::PIPELINE;
 		this->BindPoint			= VK_PIPELINE_BIND_POINT_MAX_ENUM;
 		this->Layout			= VK_NULL_HANDLE;
 		this->Cache				= VK_NULL_HANDLE;
@@ -1275,12 +1277,12 @@ namespace geodesy::gpu {
 
 		// Bind uniform buffers.
 		for (auto& [SetBinding, Buffer] : aUniformBuffer) {
-			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Buffer);
+			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Buffer->Handle);
 		}
 
 		// Bind sampler images.
 		for (auto& [SetBinding, Image] : aSamplerImage) {
-			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Image, image::layout::SHADER_READ_ONLY_OPTIMAL);
+			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Image->View, image::layout::SHADER_READ_ONLY_OPTIMAL);
 		}
 
 		// Write Command Buffer here.
@@ -1337,12 +1339,12 @@ namespace geodesy::gpu {
 
 		// Bind uniform buffers.
 		for (auto& [SetBinding, Buffer] : aBuffers) {
-			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Buffer);
+			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Buffer->Handle);
 		}
 
 		// Bind sampler images.
 		for (auto& [SetBinding, Image] : aImages) {
-			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Image, image::layout::SHADER_READ_ONLY_OPTIMAL);
+			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Image->View, image::layout::SHADER_READ_ONLY_OPTIMAL);
 		}
 
 		return this->dispatch(aThreadGroupCount, DescriptorArray);

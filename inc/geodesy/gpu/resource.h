@@ -27,6 +27,9 @@ namespace geodesy::gpu {
 		std::shared_ptr<context>        Context;
 		type                            Type;
 
+		// Virtual destructor to make the class polymorphic
+		virtual ~resource() = default;
+
 	protected:
 		
 		resource();

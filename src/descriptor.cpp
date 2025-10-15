@@ -24,8 +24,17 @@ namespace geodesy::gpu {
 		VK_BORDER_COLOR_INT_OPAQUE_BLACK,
 		VK_FALSE
 	};
-	
-	descriptor::array::array(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, VkSamplerCreateInfo aSamplerCreateInfo) {
+
+	descriptor::array::array() {
+		this->Context = nullptr;
+		this->Type = resource::type::DESCRIPTOR;
+		this->DescriptorSetLayoutBinding = {};
+		this->DescriptorPool = VK_NULL_HANDLE;
+		this->DescriptorSet = {};
+		this->SamplingMetadata = VK_NULL_HANDLE;
+	}
+
+	descriptor::array::array(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, VkSamplerCreateInfo aSamplerCreateInfo) : array() {
 		VkResult Result = VK_SUCCESS;
 		PFN_vkCreateDescriptorPool vkCreateDescriptorPool = (PFN_vkCreateDescriptorPool)aContext->function_pointer("vkCreateDescriptorPool");
 		PFN_vkAllocateDescriptorSets vkAllocateDescriptorSets = (PFN_vkAllocateDescriptorSets)aContext->function_pointer("vkAllocateDescriptorSets");
@@ -73,35 +82,13 @@ namespace geodesy::gpu {
 		// Destroy Sampler
 		vkDestroySampler(this->Context->Handle, this->SamplingMetadata, NULL);
 	}
-
-	void descriptor::array::array::bind(int aSet, int aBinding, int aArrayElement, std::shared_ptr<image> aImage, image::layout aImageLayout) {
-		if ((!this->exists(aSet, aBinding)) || (aImage == nullptr)) return;
-		VkDescriptorSetLayoutBinding DSLB = this->get_descriptor_set_layout_binding(aSet, aBinding);
-		PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)this->Context->function_pointer("vkUpdateDescriptorSets");
-		VkDescriptorImageInfo DII{};
-		DII.imageView			= aImage->View;
-		DII.imageLayout			= (VkImageLayout)aImageLayout;
-		DII.sampler				= this->SamplingMetadata;
-		VkWriteDescriptorSet WDS {};
-		WDS.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		WDS.pNext				= NULL;
-		WDS.dstSet				= this->DescriptorSet[aSet];
-		WDS.dstBinding			= aBinding;
-		WDS.dstArrayElement		= aArrayElement;
-		WDS.descriptorCount		= 1;
-		WDS.descriptorType		= DSLB.descriptorType;
-		WDS.pImageInfo			= &DII;
-		WDS.pBufferInfo			= NULL;
-		WDS.pTexelBufferView	= NULL;
-		vkUpdateDescriptorSets(this->Context->Handle, 1, &WDS, 0, NULL);
-	}
 	
-	void descriptor::array::bind(int aSet, int aBinding, int aArrayElement, std::shared_ptr<buffer> aBuffer, size_t aSize, size_t aOffset) {
-		if ((!this->exists(aSet, aBinding)) || (aBuffer == nullptr)) return;
+	void descriptor::array::bind(int aSet, int aBinding, int aArrayElement, VkBuffer aBuffer, size_t aSize, size_t aOffset) {
+		if ((!this->exists(aSet, aBinding)) || (aBuffer == VK_NULL_HANDLE)) return;
 		VkDescriptorSetLayoutBinding DSLB = this->get_descriptor_set_layout_binding(aSet, aBinding);
 		PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)this->Context->function_pointer("vkUpdateDescriptorSets");
 		VkDescriptorBufferInfo DBI{};
-		DBI.buffer				= aBuffer->Handle;
+		DBI.buffer				= aBuffer;
 		DBI.offset				= aOffset;
 		DBI.range				= aSize;
 		VkWriteDescriptorSet WDS {};
@@ -117,28 +104,6 @@ namespace geodesy::gpu {
 		WDS.pTexelBufferView	= NULL;
 		vkUpdateDescriptorSets(this->Context->Handle, 1, &WDS, 0, NULL);	
 	}
-
-	// void descriptor::array::bind(int aSet, int aBinding, int aArrayElement, std::shared_ptr<acceleration_structure> aAccelerationStructure) {
-	// 	if ((!this->exists(aSet, aBinding)) || (aAccelerationStructure == nullptr)) return;
-	// 	VkDescriptorSetLayoutBinding DSLB = this->get_descriptor_set_layout_binding(aSet, aBinding);
-	// 	VkWriteDescriptorSetAccelerationStructureKHR WDSAS{};
-	// 	WDSAS.sType								= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
-	// 	WDSAS.pNext								= NULL;
-	// 	WDSAS.accelerationStructureCount		= 1;
-	// 	WDSAS.pAccelerationStructures			= &aAccelerationStructure->Handle;
-	// 	VkWriteDescriptorSet WDS {};
-	// 	WDS.sType								= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	// 	WDS.pNext								= &WDSAS;
-	// 	WDS.dstSet								= this->DescriptorSet[aSet];
-	// 	WDS.dstBinding							= aBinding;
-	// 	WDS.dstArrayElement						= aArrayElement;
-	// 	WDS.descriptorCount						= 1;
-	// 	WDS.descriptorType						= DSLB.descriptorType;
-	// 	WDS.pImageInfo							= NULL;
-	// 	WDS.pBufferInfo							= NULL;
-	// 	WDS.pTexelBufferView					= NULL;
-	// 	vkUpdateDescriptorSets(this->Context->Handle, 1, &WDS, 0, NULL);
-	// }
 	
 	void descriptor::array::bind(int aSet, int aBinding, int aArrayElement, VkBufferView aBufferView) {
 		if ((!this->exists(aSet, aBinding)) || (aBufferView == VK_NULL_HANDLE)) return;
@@ -156,6 +121,51 @@ namespace geodesy::gpu {
 		WDS.pBufferInfo			= NULL;
 		WDS.pTexelBufferView	= &aBufferView;
 		vkUpdateDescriptorSets(this->Context->Handle, 1, &WDS, 0, NULL);	
+	}
+
+	void descriptor::array::array::bind(int aSet, int aBinding, int aArrayElement, VkImageView aImageView, image::layout aImageLayout) {
+		if ((!this->exists(aSet, aBinding)) || (aImageView == VK_NULL_HANDLE)) return;
+		VkDescriptorSetLayoutBinding DSLB = this->get_descriptor_set_layout_binding(aSet, aBinding);
+		PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)this->Context->function_pointer("vkUpdateDescriptorSets");
+		VkDescriptorImageInfo DII{};
+		DII.imageView			= aImageView;
+		DII.imageLayout			= (VkImageLayout)aImageLayout;
+		DII.sampler				= this->SamplingMetadata;
+		VkWriteDescriptorSet WDS {};
+		WDS.sType				= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		WDS.pNext				= NULL;
+		WDS.dstSet				= this->DescriptorSet[aSet];
+		WDS.dstBinding			= aBinding;
+		WDS.dstArrayElement		= aArrayElement;
+		WDS.descriptorCount		= 1;
+		WDS.descriptorType		= DSLB.descriptorType;
+		WDS.pImageInfo			= &DII;
+		WDS.pBufferInfo			= NULL;
+		WDS.pTexelBufferView	= NULL;
+		vkUpdateDescriptorSets(this->Context->Handle, 1, &WDS, 0, NULL);
+	}
+
+	void descriptor::array::bind(int aSet, int aBinding, int aArrayElement, VkAccelerationStructureKHR aAccelerationStructure) {
+		if ((!this->exists(aSet, aBinding)) || (aAccelerationStructure == nullptr)) return;
+		VkDescriptorSetLayoutBinding DSLB = this->get_descriptor_set_layout_binding(aSet, aBinding);
+		PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = (PFN_vkUpdateDescriptorSets)this->Context->function_pointer("vkUpdateDescriptorSets");
+		VkWriteDescriptorSetAccelerationStructureKHR WDSAS{};
+		WDSAS.sType								= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+		WDSAS.pNext								= NULL;
+		WDSAS.accelerationStructureCount		= 1;
+		WDSAS.pAccelerationStructures			= &aAccelerationStructure;
+		VkWriteDescriptorSet WDS {};
+		WDS.sType								= VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		WDS.pNext								= &WDSAS;
+		WDS.dstSet								= this->DescriptorSet[aSet];
+		WDS.dstBinding							= aBinding;
+		WDS.dstArrayElement						= aArrayElement;
+		WDS.descriptorCount						= 1;
+		WDS.descriptorType						= DSLB.descriptorType;
+		WDS.pImageInfo							= NULL;
+		WDS.pBufferInfo							= NULL;
+		WDS.pTexelBufferView					= NULL;
+		vkUpdateDescriptorSets(this->Context->Handle, 1, &WDS, 0, NULL);
 	}
 
 	bool descriptor::array::exists(int aSet, int aBinding) {

@@ -9,6 +9,7 @@ namespace geodesy::gpu {
 	command_buffer::command_buffer() {
 		this->CommandPool = nullptr;
 		this->Handle = VK_NULL_HANDLE;
+		this->Type = resource::type::COMMAND_BUFFER;
 	}
 
 	command_buffer::command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBuffer aHandle) : command_buffer() {

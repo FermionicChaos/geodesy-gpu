@@ -28,6 +28,7 @@ namespace geodesy::gpu {
 
 	buffer::buffer() {
 		this->Context		= nullptr;
+		this->Type			= resource::type::BUFFER;
 		this->CreateInfo 	= {};
 		this->Handle 		= VK_NULL_HANDLE;
 		this->ElementCount 	= 0;

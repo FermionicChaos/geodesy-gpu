@@ -6,6 +6,7 @@ namespace geodesy::gpu {
 
 	semaphore::semaphore() {
 		this->Handle = VK_NULL_HANDLE;
+		this->Type = resource::type::SEMAPHORE;
 	}
 
 	semaphore::semaphore(std::shared_ptr<context> aContext) : semaphore() {

@@ -35,14 +35,14 @@ namespace geodesy::gpu {
 			std::vector<VkDescriptorSet> 								DescriptorSet;					// DS used for binding resource references to pipeline.
 			VkSampler 													SamplingMetadata;				// Sampling metadata for the descriptor set.
 
-			array() {}
+			array();
 			array(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, VkSamplerCreateInfo aSamplerCreateInfo = DefaultSamplerCreateInfo);
 			~array();
 
-			void bind(int aSet, int aBinding, int aArrayElement, std::shared_ptr<image> aImage, image::layout aImageLayout = image::layout::SHADER_READ_ONLY_OPTIMAL);
-			void bind(int aSet, int aBinding, int aArrayElement, std::shared_ptr<buffer> aBuffer, size_t aSize = VK_WHOLE_SIZE, size_t aOffset = 0);
-			// void bind(int aSet, int aBinding, int aArrayElement, std::shared_ptr<acceleration_structure> aAccelerationStructure);
+			void bind(int aSet, int aBinding, int aArrayElement, VkBuffer aBuffer, size_t aSize = VK_WHOLE_SIZE, size_t aOffset = 0);
 			void bind(int aSet, int aBinding, int aArrayElement, VkBufferView aBufferView);
+			void bind(int aSet, int aBinding, int aArrayElement, VkImageView aImage, image::layout aImageLayout = image::layout::SHADER_READ_ONLY_OPTIMAL);
+			void bind(int aSet, int aBinding, int aArrayElement, VkAccelerationStructureKHR aAccelerationStructure);
 
 		private:
 

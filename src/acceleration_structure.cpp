@@ -7,6 +7,7 @@ namespace geodesy::gpu {
 	acceleration_structure::acceleration_structure() {
 		// Zero init here.
 		this->Context = nullptr;
+		this->Type = resource::type::ACCELERATION_STRUCTURE;
 		
 	}
 

@@ -6,6 +6,7 @@ namespace geodesy::gpu {
 
 	fence::fence() {
 		this->Handle = VK_NULL_HANDLE;
+		this->Type = resource::type::FENCE;
 	}
 
 	fence::fence(std::shared_ptr<context> aContext, bool aSignaled) : fence() {

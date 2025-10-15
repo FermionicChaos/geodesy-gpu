@@ -782,10 +782,11 @@ namespace geodesy::gpu {
 	}
 
 	image::image() {
+		this->Context								= nullptr;
+		this->Type 									= resource::type::IMAGE;
 		this->OpaquePercentage 						= 0.0f;
 		this->TransparentPercentage 				= 0.0f;
 		this->TranslucentPercentage 				= 0.0f;
-		this->Context								= nullptr;
 		this->CreateInfo							= {};
 		this->Handle								= VK_NULL_HANDLE;
 		this->View 									= VK_NULL_HANDLE;
