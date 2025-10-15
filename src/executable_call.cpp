@@ -47,9 +47,9 @@ namespace geodesy::gpu {
 				}
 				break;
 			case resource::type::ACCELERATION_STRUCTURE: {
-				// TODO: Bind Acceleration Structure resources
-				// std::shared_ptr<acceleration_structure> AccelerationStructureResource = std::dynamic_pointer_cast<acceleration_structure>(Resource);
-				// this->DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, AccelerationStructureResource->Handle);
+				// Bind Acceleration Structure resources
+				std::shared_ptr<acceleration_structure> AccelerationStructureResource = std::dynamic_pointer_cast<acceleration_structure>(Resource);
+				this->DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, AccelerationStructureResource->Handle);
 				}
 				break;
 			}
