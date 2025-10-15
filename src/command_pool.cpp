@@ -33,8 +33,8 @@ namespace geodesy::gpu {
 		// Because every command buffer has a shared copy of the command pool,
 		// this won't be called until all command buffers are destroyed.
 		vkDestroyCommandPool(this->Context->Handle, this->Handle, NULL);
-	}
-
+	}	
+	
 	std::shared_ptr<command_buffer> command_pool::allocate_command_buffer(VkCommandBufferLevel aLevel) {
 		std::vector<std::shared_ptr<command_buffer>> CB = this->allocate_command_buffers(1, aLevel);
 		return CB.size() > 0 ? CB[0] : nullptr;

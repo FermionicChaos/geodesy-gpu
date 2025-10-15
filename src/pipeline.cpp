@@ -583,7 +583,7 @@ namespace geodesy::gpu {
 	}
 
 	void pipeline::barrier(
-		std::shared_ptr<command_buffer> aCommandBuffer,
+		command_buffer* aCommandBuffer,
 		unsigned int aSrcStage, unsigned int aDstStage,
 		unsigned int aSrcAccess, unsigned int aDstAccess
 	) {
@@ -597,7 +597,7 @@ namespace geodesy::gpu {
 	}
 
 	void pipeline::barrier(
-		std::shared_ptr<command_buffer> aCommandBuffer, 
+		command_buffer* aCommandBuffer, 
 		unsigned int aSrcStage, unsigned int aDstStage, 
 		const std::vector<VkMemoryBarrier>& aMemoryBarrier, 
 		const std::vector<VkBufferMemoryBarrier>& aBufferBarrier, 
@@ -1133,7 +1133,7 @@ namespace geodesy::gpu {
 	}
 
 	void pipeline::bind(
-		std::shared_ptr<command_buffer> 		aCommandBuffer, 
+		command_buffer* 						aCommandBuffer, 
 		std::vector<std::shared_ptr<buffer>> 	aVertexBuffer, 
 		std::shared_ptr<buffer> 				aIndexBuffer, 
 		std::shared_ptr<descriptor::array> 		aDescriptorArray
@@ -1163,10 +1163,10 @@ namespace geodesy::gpu {
 	}
 
 	void pipeline::begin(
-		std::shared_ptr<command_buffer> aCommandBuffer, 
-		std::shared_ptr<framebuffer> aFramebuffer, 
-		VkRect2D aRenderArea, 
-		VkSubpassContents aSubpassContents
+		command_buffer* 				aCommandBuffer, 
+		std::shared_ptr<framebuffer> 	aFramebuffer, 
+		VkRect2D 						aRenderArea, 
+		VkSubpassContents 				aSubpassContents
 	) {
 		PFN_vkCmdBeginRenderPass vkCmdBeginRenderPass = (PFN_vkCmdBeginRenderPass)this->Context->function_pointer("vkCmdBeginRenderPass");
 		VkRenderPassBeginInfo RPBI{};
@@ -1181,7 +1181,7 @@ namespace geodesy::gpu {
 	}
 
 	void pipeline::rasterize(
-		std::shared_ptr<command_buffer> 							aCommandBuffer,
+		command_buffer* 											aCommandBuffer,
 		std::shared_ptr<framebuffer> 								aFramebuffer,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
@@ -1202,13 +1202,13 @@ namespace geodesy::gpu {
 		this->end(aCommandBuffer);
 	}
 
-	void pipeline::end(std::shared_ptr<command_buffer> aCommandBuffer) {
+	void pipeline::end(command_buffer* aCommandBuffer) {
 		PFN_vkCmdEndRenderPass vkCmdEndRenderPass = (PFN_vkCmdEndRenderPass)this->Context->function_pointer("vkCmdEndRenderPass");
 		vkCmdEndRenderPass(aCommandBuffer->Handle);
 	}
 
 	void pipeline::raytrace(
-		std::shared_ptr<command_buffer> 							aCommandBuffer,
+		command_buffer* 											aCommandBuffer,
 		std::shared_ptr<descriptor::array> 							aDescriptorArray,
 		std::array<unsigned int, 3> 								aResolution
 	) {
@@ -1227,7 +1227,7 @@ namespace geodesy::gpu {
 	}
 
 	void pipeline::dispatch(
-		std::shared_ptr<command_buffer> 							aCommandBuffer,
+		command_buffer* 											aCommandBuffer,
 		std::array<unsigned int, 3> 								aThreadGroupCount,
 		std::shared_ptr<descriptor::array> 							aDescriptorArray
 	) {
@@ -1248,7 +1248,7 @@ namespace geodesy::gpu {
 		auto CommandBuffer = CommandPool->allocate_command_buffer();
 
 		Result = CommandBuffer->begin();
-		this->rasterize(CommandBuffer, aFramebuffer, aVertexBuffer, aIndexBuffer, aDescriptorArray);
+		this->rasterize(CommandBuffer.get(), aFramebuffer, aVertexBuffer, aIndexBuffer, aDescriptorArray);
 		Result = CommandBuffer->end();
 
 		Result = this->Context->execute_and_wait(device::operation::GRAPHICS, CommandBuffer);
@@ -1287,7 +1287,7 @@ namespace geodesy::gpu {
 
 		// Write Command Buffer here.
 		Result = CommandBuffer->begin();
-		this->rasterize(CommandBuffer, Framebuffer, aVertexBuffer, aIndexBuffer, DescriptorArray);
+		this->rasterize(CommandBuffer.get(), Framebuffer, aVertexBuffer, aIndexBuffer, DescriptorArray);
 		Result = CommandBuffer->end();
 
 		// Execute Command Buffer here.
@@ -1318,7 +1318,7 @@ namespace geodesy::gpu {
 		auto CommandBuffer = CommandPool->allocate_command_buffer();
 
 		Result = CommandBuffer->begin();
-		this->dispatch(CommandBuffer, aThreadGroupCount, aDescriptorArray);
+		this->dispatch(CommandBuffer.get(), aThreadGroupCount, aDescriptorArray);
 		Result = CommandBuffer->end();
 
 		// Execute Command Buffer here.

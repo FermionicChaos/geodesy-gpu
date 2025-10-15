@@ -14,12 +14,10 @@ namespace geodesy::gpu {
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
 		std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding
-	) {
+	) : command_buffer() {
 		VkResult Result = VK_SUCCESS;
 		std::shared_ptr<pipeline::rasterizer> Rasterizer = std::dynamic_pointer_cast<pipeline::rasterizer>(aRasterizationPipeline->CreateInfo);
 		// These objects need to persist longer than the call, so they are passed in.
-		this->Context = aContext;
-		this->CommandPool = aCommandPool;
 		this->Pipeline = aRasterizationPipeline;
 
 		// Allocate Framebuffer object metadata.
@@ -27,9 +25,6 @@ namespace geodesy::gpu {
 
 		// Allocate Descriptor Set Array
 		this->DescriptorArray = Context->create<descriptor::array>(aRasterizationPipeline);
-
-		// Allocate Command Buffer from Command Pool
-		this->CommandBuffer = CommandPool->allocate_command_buffer();
 
 		// Bind Resources to Descriptor Sets
 		for (auto& [SetBinding, Resource] : aUniformSetBinding) {
@@ -56,9 +51,9 @@ namespace geodesy::gpu {
 		}
 
 		// Record to Command Buffer
-		Result = this->CommandBuffer->begin();
-		this->Pipeline->rasterize(this->CommandBuffer, this->Framebuffer, aVertexBuffer, aIndexBuffer, this->DescriptorArray);
-		Result = this->CommandBuffer->end();
+		Result = this->begin();
+		this->Pipeline->rasterize(this, this->Framebuffer, aVertexBuffer, aIndexBuffer, this->DescriptorArray);
+		Result = this->end();
 	}
 
 }

@@ -27,15 +27,12 @@ namespace geodesy::gpu {
 	// This could be a rasterization draw call, a compute dispatch call, or a
 	// ray tracing call. This class will contain all the necessary metadata
 	// to facilitate a full call.
-	struct executable_call {
+	class executable_call : public command_buffer {
+	public:
 
-		std::shared_ptr<context> 					Context;
-		std::shared_ptr<command_pool> 				CommandPool;
 		std::shared_ptr<pipeline> 					Pipeline;
-
 		std::shared_ptr<framebuffer> 				Framebuffer;
 		std::shared_ptr<descriptor::array> 			DescriptorArray;
-		std::shared_ptr<command_buffer> 			CommandBuffer;
 
 		executable_call();
 		// Rasterization Call

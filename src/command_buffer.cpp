@@ -7,15 +7,27 @@
 namespace geodesy::gpu {
 
 	command_buffer::command_buffer() {
+		this->Type = resource::type::COMMAND_BUFFER;
 		this->CommandPool = nullptr;
 		this->Handle = VK_NULL_HANDLE;
-		this->Type = resource::type::COMMAND_BUFFER;
 	}
 
 	command_buffer::command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBuffer aHandle) : command_buffer() {
 		this->Context = aContext;
 		this->CommandPool = aCommandPool;
 		this->Handle = aHandle;
+	}
+
+	command_buffer::command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBufferLevel aLevel) : command_buffer() {
+		VkResult Result = VK_SUCCESS;
+		VkCommandBufferAllocateInfo CBAI = {};
+		PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = (PFN_vkAllocateCommandBuffers)this->Context->function_pointer("vkAllocateCommandBuffers");
+		CBAI.sType						= VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		CBAI.pNext						= NULL;
+		CBAI.commandPool				= aCommandPool->Handle;
+		CBAI.level						= aLevel;
+		CBAI.commandBufferCount			= 1;
+		Result = vkAllocateCommandBuffers(this->Context->Handle, &CBAI, &this->Handle);
 	}
 
 	command_buffer::~command_buffer() {
@@ -37,66 +49,6 @@ namespace geodesy::gpu {
 	VkResult command_buffer::end() {
 		PFN_vkEndCommandBuffer vkEndCommandBuffer = (PFN_vkEndCommandBuffer)this->Context->function_pointer("vkEndCommandBuffer");
 		return vkEndCommandBuffer(this->Handle);
-	}
-
-	void command_buffer::begin_rendering(VkRect2D aRenderArea, std::vector<VkImageView> aColorAttachments, VkImageView aDepthAttachment, VkImageView aStencilAttachment) {
-		std::vector<VkRenderingAttachmentInfo> ColorAttachmentInfo(aColorAttachments.size());
-		VkRenderingAttachmentInfo DepthAttachmentInfo{};
-		VkRenderingAttachmentInfo StencilAttachmentInfo{};
-		VkRenderingInfo RenderingInfo{};
-		PFN_vkCmdBeginRendering vkCmdBeginRendering = (PFN_vkCmdBeginRendering)this->Context->function_pointer("vkCmdBeginRendering");
-
-		for (size_t i = 0; i < aColorAttachments.size(); i++) {
-			ColorAttachmentInfo[i].sType				= VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-			ColorAttachmentInfo[i].pNext				= NULL;
-			ColorAttachmentInfo[i].imageView			= aColorAttachments[i];
-			ColorAttachmentInfo[i].imageLayout			= VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			ColorAttachmentInfo[i].resolveMode			= VK_RESOLVE_MODE_NONE;
-			ColorAttachmentInfo[i].resolveImageView		= VK_NULL_HANDLE;
-			ColorAttachmentInfo[i].resolveImageLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
-			ColorAttachmentInfo[i].loadOp				= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			ColorAttachmentInfo[i].storeOp				= VK_ATTACHMENT_STORE_OP_STORE;
-			//ColorAttachmentInfo[i].clearValue			= { 0.0f, 0.0f, 0.0f, 0.0f };
-		}
-
-		DepthAttachmentInfo.sType					= VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-		DepthAttachmentInfo.pNext					= NULL;
-		DepthAttachmentInfo.imageView				= aDepthAttachment;
-		DepthAttachmentInfo.imageLayout				= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		DepthAttachmentInfo.resolveMode				= VK_RESOLVE_MODE_NONE;
-		DepthAttachmentInfo.resolveImageView		= VK_NULL_HANDLE;
-		DepthAttachmentInfo.resolveImageLayout		= VK_IMAGE_LAYOUT_UNDEFINED;
-		DepthAttachmentInfo.loadOp					= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		DepthAttachmentInfo.storeOp					= VK_ATTACHMENT_STORE_OP_STORE;
-		//DepthAttachmentInfo.clearValue				= { 0.0f, 0.0f, 0.0f, 0.0f };
-
-		StencilAttachmentInfo.sType					= VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-		StencilAttachmentInfo.pNext					= NULL;
-		StencilAttachmentInfo.imageView				= aDepthAttachment;
-		StencilAttachmentInfo.imageLayout			= VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		StencilAttachmentInfo.resolveMode			= VK_RESOLVE_MODE_NONE;
-		StencilAttachmentInfo.resolveImageView		= VK_NULL_HANDLE;
-		StencilAttachmentInfo.resolveImageLayout	= VK_IMAGE_LAYOUT_UNDEFINED;
-		StencilAttachmentInfo.loadOp				= VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		StencilAttachmentInfo.storeOp				= VK_ATTACHMENT_STORE_OP_STORE;
-		//StencilAttachmentInfo.clearValue			= { 0.0f, 0.0f, 0.0f, 0.0f };
-
-		RenderingInfo.sType							= VK_STRUCTURE_TYPE_RENDERING_INFO;
-		RenderingInfo.pNext							= NULL;
-		RenderingInfo.flags							= 0;
-		RenderingInfo.renderArea					= aRenderArea;
-		RenderingInfo.layerCount					= 1;
-		RenderingInfo.viewMask						= 1;
-		RenderingInfo.colorAttachmentCount			= ColorAttachmentInfo.size();
-		RenderingInfo.pColorAttachments				= ColorAttachmentInfo.data();
-		RenderingInfo.pDepthAttachment				= &DepthAttachmentInfo;
-		RenderingInfo.pStencilAttachment			= &StencilAttachmentInfo;
-		vkCmdBeginRendering(this->Handle, &RenderingInfo);
-	}
-
-	void command_buffer::end_rendering() {
-		PFN_vkCmdEndRendering vkCmdEndRendering = (PFN_vkCmdEndRendering)this->Context->function_pointer("vkCmdEndRendering");
-		vkCmdEndRendering(this->Handle);
 	}
 
 	void command_buffer::bind_vertex_buffers(VkCommandBuffer aCommandBuffer, std::vector<VkBuffer> aBufferList, const VkDeviceSize* aOffset) {

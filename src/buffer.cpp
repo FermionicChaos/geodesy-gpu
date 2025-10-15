@@ -91,7 +91,7 @@ namespace geodesy::gpu {
 		this->Context->free_memory(this->MemoryHandle);
 	}
 
-	void buffer::copy(std::shared_ptr<command_buffer> aCommandBuffer, size_t aDestinationOffset, std::shared_ptr<buffer> aSourceData, size_t aSourceOffset, size_t aRegionSize) {
+	void buffer::copy(command_buffer* aCommandBuffer, size_t aDestinationOffset, std::shared_ptr<buffer> aSourceData, size_t aSourceOffset, size_t aRegionSize) {
 		VkBufferCopy Region{};
 		Region.srcOffset		= aSourceOffset;
 		Region.dstOffset		= aDestinationOffset;
@@ -101,12 +101,12 @@ namespace geodesy::gpu {
 		this->copy(aCommandBuffer, aSourceData, RegionList);
 	}
 
-	void buffer::copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<buffer> aSourceData, std::vector<VkBufferCopy> aRegionList) {
+	void buffer::copy(command_buffer* aCommandBuffer, std::shared_ptr<buffer> aSourceData, std::vector<VkBufferCopy> aRegionList) {
 		PFN_vkCmdCopyBuffer vkCmdCopyBuffer = (PFN_vkCmdCopyBuffer)this->Context->function_pointer("vkCmdCopyBuffer");
 		vkCmdCopyBuffer(aCommandBuffer->Handle, aSourceData->Handle, this->Handle, aRegionList.size(), aRegionList.data());
 	}
 
-	void buffer::copy(std::shared_ptr<command_buffer> aCommandBuffer, size_t aDestinationOffset, std::shared_ptr<image> aSourceData, VkOffset3D aSourceOffset, uint32_t aSourceArrayLayer, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount) {
+	void buffer::copy(command_buffer* aCommandBuffer, size_t aDestinationOffset, std::shared_ptr<image> aSourceData, VkOffset3D aSourceOffset, uint32_t aSourceArrayLayer, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount) {
 		VkBufferImageCopy Region {};
 		Region.bufferOffset						= aDestinationOffset;
 		Region.bufferRowLength					= 0;
@@ -119,7 +119,7 @@ namespace geodesy::gpu {
 		this->copy(aCommandBuffer, aSourceData, RegionList);
 	}
 
-	void buffer::copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<image> aSourceData, std::vector<VkBufferImageCopy> aRegionList) {
+	void buffer::copy(command_buffer* aCommandBuffer, std::shared_ptr<image> aSourceData, std::vector<VkBufferImageCopy> aRegionList) {
 		PFN_vkCmdCopyImageToBuffer vkCmdCopyImageToBuffer = (PFN_vkCmdCopyImageToBuffer)this->Context->function_pointer("vkCmdCopyImageToBuffer");
 		vkCmdCopyImageToBuffer(
 			aCommandBuffer->Handle, 
@@ -146,7 +146,7 @@ namespace geodesy::gpu {
 
 		// Record Command Buffer
 		Result = CommandBuffer->begin();
-		this->copy(CommandBuffer, aSourceData, aRegionList);
+		this->copy(CommandBuffer.get(), aSourceData, aRegionList);
 		Result = CommandBuffer->end();
 
 		// Execute command buffer.
@@ -177,7 +177,7 @@ namespace geodesy::gpu {
 
 		// Record Command Buffer
 		Result = CommandBuffer->begin();
-		this->copy(CommandBuffer, aSourceData, aRegionList);
+		this->copy(CommandBuffer.get(), aSourceData, aRegionList);
 		Result = CommandBuffer->end();
 
 		// Execute command buffer.

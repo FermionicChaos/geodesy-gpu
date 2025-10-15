@@ -204,12 +204,12 @@ namespace geodesy::gpu {
 		};
 
 		static void barrier(
-			std::shared_ptr<command_buffer> aCommandBuffer,
+			command_buffer* aCommandBuffer,
 			unsigned int aSrcStage, unsigned int aDstStage,
 			unsigned int aSrcAccess, unsigned int aDstAccess
 		);
 		static void barrier(
-			std::shared_ptr<command_buffer> aCommandBuffer, 
+			command_buffer* aCommandBuffer, 
 			unsigned int aSrcStage, unsigned int aDstStage, 
 			const std::vector<VkMemoryBarrier>& aMemoryBarrier = {}, 
 			const std::vector<VkBufferMemoryBarrier>& aBufferBarrier = {}, 
@@ -248,31 +248,31 @@ namespace geodesy::gpu {
 
 		// Can be used for rasterization, raytracing, or compute.
 		void bind(
-			std::shared_ptr<command_buffer> 							aCommandBuffer, 
+			command_buffer* 											aCommandBuffer, 
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {}, 
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr, 
 			std::shared_ptr<descriptor::array> 							aDescriptorArray = nullptr
 		);
 
 		// Rasterization API
-		void begin(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<framebuffer> aFrame, VkRect2D aRenderArea, VkSubpassContents aSubpassContents = VK_SUBPASS_CONTENTS_INLINE);
+		void begin(command_buffer* aCommandBuffer, std::shared_ptr<framebuffer> aFrame, VkRect2D aRenderArea, VkSubpassContents aSubpassContents = VK_SUBPASS_CONTENTS_INLINE);
 		void rasterize(
-			std::shared_ptr<command_buffer> 							aCommandBuffer,
+			command_buffer* 				 							aCommandBuffer,
 			std::shared_ptr<framebuffer> 								aFramebuffer,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
 			std::shared_ptr<descriptor::array> 							aDescriptorArray = nullptr
 		);
-		void end(std::shared_ptr<command_buffer> aCommandBuffer);
+		void end(command_buffer* aCommandBuffer);
 		// Raytracing API
 		void raytrace(
-			std::shared_ptr<command_buffer> 							aCommandBuffer,
+			command_buffer* 				 							aCommandBuffer,
 			std::shared_ptr<descriptor::array> 							aDescriptorArray,
 			std::array<unsigned int, 3> 								aResolution
 		);
 		// Compute API
 		void dispatch(
-			std::shared_ptr<command_buffer> 							aCommandBuffer,
+			command_buffer* 				 							aCommandBuffer,
 			std::array<unsigned int, 3> 								aThreadGroupCount,
 			std::shared_ptr<descriptor::array> 							aDescriptorArray
 		);

@@ -997,7 +997,7 @@ namespace geodesy::gpu {
 	}
 
 	// Device Operation Support: T.
-	void image::copy(std::shared_ptr<command_buffer> aCommandBuffer, VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<buffer> aSourceData, size_t aSourceOffset, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount) {
+	void image::copy(command_buffer* aCommandBuffer, VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<buffer> aSourceData, size_t aSourceOffset, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount) {
 		VkBufferImageCopy Region{};
 		Region.bufferOffset 		= aSourceOffset;
 		Region.bufferRowLength 		= 0;
@@ -1009,12 +1009,12 @@ namespace geodesy::gpu {
 		this->copy(aCommandBuffer, aSourceData, RegionList);
 	}
 
-	void image::copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<buffer> aSourceData, std::vector<VkBufferImageCopy> aRegionList) {
+	void image::copy(command_buffer* aCommandBuffer, std::shared_ptr<buffer> aSourceData, std::vector<VkBufferImageCopy> aRegionList) {
 		PFN_vkCmdCopyBufferToImage vkCmdCopyBufferToImage = (PFN_vkCmdCopyBufferToImage)this->Context->function_pointer("vkCmdCopyBufferToImage");
 		vkCmdCopyBufferToImage(aCommandBuffer->Handle, aSourceData->Handle, this->Handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, aRegionList.size(), aRegionList.data());
 	}
 
-	void image::copy(std::shared_ptr<command_buffer> aCommandBuffer, VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<image> aSourceData, VkOffset3D aSourceOffset, uint32_t aSourceArrayLayer, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount) {
+	void image::copy(command_buffer* aCommandBuffer, VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<image> aSourceData, VkOffset3D aSourceOffset, uint32_t aSourceArrayLayer, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount) {
 		VkImageCopy Region{};
 		Region.srcSubresource 		= { aspect_flag(aSourceData->CreateInfo.format), 0, aSourceArrayLayer, aArrayLayerCount };
 		Region.srcOffset 			= aSourceOffset;
@@ -1025,7 +1025,7 @@ namespace geodesy::gpu {
 		this->copy(aCommandBuffer, aSourceData, RegionList);
 	}
 
-	void image::copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<image> aSourceData, std::vector<VkImageCopy> aRegionList) {
+	void image::copy(command_buffer* aCommandBuffer, std::shared_ptr<image> aSourceData, std::vector<VkImageCopy> aRegionList) {
 		PFN_vkCmdCopyImage vkCmdCopyImage = (PFN_vkCmdCopyImage)this->Context->function_pointer("vkCmdCopyImage");
 		vkCmdCopyImage(
 			aCommandBuffer->Handle,
@@ -1036,7 +1036,7 @@ namespace geodesy::gpu {
 	}
 
 	void image::transition(
-		std::shared_ptr<command_buffer> aCommandBuffer,
+		command_buffer* aCommandBuffer,
 		layout aCurrentLayout, layout aFinalLayout,
 		VkPipelineStageFlags aSrcStageMask, VkPipelineStageFlags aDstStageMask,
 		uint32_t aMipLevel, uint32_t aMipLevelCount,
@@ -1061,7 +1061,7 @@ namespace geodesy::gpu {
 		);
 	}
 
-	void image::clear(std::shared_ptr<command_buffer> aCommandBuffer, VkClearColorValue aClearColor, image::layout aCurrentImageLayout, uint32_t aStartingArrayLayer, uint32_t aArrayLayerCount) {
+	void image::clear(command_buffer* aCommandBuffer, VkClearColorValue aClearColor, image::layout aCurrentImageLayout, uint32_t aStartingArrayLayer, uint32_t aArrayLayerCount) {
 		VkImageSubresourceRange SubresourceRange{};
 		PFN_vkCmdClearColorImage vkCmdClearColorImage = (PFN_vkCmdClearColorImage)this->Context->function_pointer("vkCmdClearColorImage");
 		SubresourceRange.aspectMask 	= VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1074,7 +1074,7 @@ namespace geodesy::gpu {
 		this->transition(aCommandBuffer, TRANSFER_DST_OPTIMAL, aCurrentImageLayout, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, this->CreateInfo.mipLevels, aStartingArrayLayer, aArrayLayerCount);
 	}
 
-	void image::clear_depth(std::shared_ptr<command_buffer> aCommandBuffer, VkClearDepthStencilValue aClearDepthStencil, image::layout aCurrentImageLayout, uint32_t aStartingArrayLayer, uint32_t aArrayLayerCount) {
+	void image::clear_depth(command_buffer* aCommandBuffer, VkClearDepthStencilValue aClearDepthStencil, image::layout aCurrentImageLayout, uint32_t aStartingArrayLayer, uint32_t aArrayLayerCount) {
 		VkImageSubresourceRange SubresourceRange{};
 		PFN_vkCmdClearDepthStencilImage vkCmdClearDepthStencilImage = (PFN_vkCmdClearDepthStencilImage)this->Context->function_pointer("vkCmdClearDepthStencilImage");
 		SubresourceRange.aspectMask 	= VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -1106,7 +1106,7 @@ namespace geodesy::gpu {
 
 		// Record command buffer.
 		Result = CommandBuffer->begin();
-		this->copy(CommandBuffer, aSourceData, aRegionList);
+		this->copy(CommandBuffer.get(), aSourceData, aRegionList);
 		Result = CommandBuffer->end();
 
 		// Execute command buffer.
@@ -1133,7 +1133,7 @@ namespace geodesy::gpu {
 
 		// Record command buffer.
 		Result = CommandBuffer->begin();
-		this->copy(CommandBuffer, aSourceData, aRegionList);
+		this->copy(CommandBuffer.get(), aSourceData, aRegionList);
 		Result = CommandBuffer->end();
 
 		// Execute command buffer.
@@ -1187,7 +1187,7 @@ namespace geodesy::gpu {
 
 		// Record command buffer.
 		Result = CommandBuffer->begin();
-		this->clear(CommandBuffer, aClearColor, aCurrentImageLayout, aStartingArrayLayer, aArrayLayerCount);
+		this->clear(CommandBuffer.get(), aClearColor, aCurrentImageLayout, aStartingArrayLayer, aArrayLayerCount);
 		Result = CommandBuffer->end();
 
 		// Execute command buffer.
@@ -1203,7 +1203,7 @@ namespace geodesy::gpu {
 
 		// Record command buffer.
 		Result = CommandBuffer->begin();
-		this->clear_depth(CommandBuffer, aClearDepthStencil, aCurrentImageLayout, aStartingArrayLayer, aArrayLayerCount);
+		this->clear_depth(CommandBuffer.get(), aClearDepthStencil, aCurrentImageLayout, aStartingArrayLayer, aArrayLayerCount);
 		Result = CommandBuffer->end();
 
 		// Execute command buffer.

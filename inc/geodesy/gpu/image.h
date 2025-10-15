@@ -401,19 +401,19 @@ namespace geodesy::gpu {
 		~image();
 
 		// Scheduled Operations
-		void copy(std::shared_ptr<command_buffer> aCommandBuffer, VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<buffer> aSourceData, size_t aSourceOffset, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount = UINT32_MAX);
-		void copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<buffer> aSourceData, std::vector<VkBufferImageCopy> aRegionList);
-		void copy(std::shared_ptr<command_buffer> aCommandBuffer, VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<image> aSourceData, VkOffset3D aSourceOffset, uint32_t aSourceArrayLayer, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount = UINT32_MAX);
-		void copy(std::shared_ptr<command_buffer> aCommandBuffer, std::shared_ptr<image> aSourceData, std::vector<VkImageCopy> aRegionList);
+		void copy(command_buffer* aCommandBuffer, VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<buffer> aSourceData, size_t aSourceOffset, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount = UINT32_MAX);
+		void copy(command_buffer* aCommandBuffer, std::shared_ptr<buffer> aSourceData, std::vector<VkBufferImageCopy> aRegionList);
+		void copy(command_buffer* aCommandBuffer, VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<image> aSourceData, VkOffset3D aSourceOffset, uint32_t aSourceArrayLayer, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount = UINT32_MAX);
+		void copy(command_buffer* aCommandBuffer, std::shared_ptr<image> aSourceData, std::vector<VkImageCopy> aRegionList);
 		void transition(
-			std::shared_ptr<command_buffer> aCommandBuffer,
+			command_buffer* aCommandBuffer,
 			layout aCurrentLayout, layout aFinalLayout,
 			VkPipelineStageFlags aSrcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VkPipelineStageFlags aDstStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 			uint32_t aMipLevel = 0, uint32_t aMipLevelCount = UINT32_MAX,
 			uint32_t aArrayLayerStart = 0, uint32_t aArrayLayerCount = UINT32_MAX
 		);
-		void clear(std::shared_ptr<command_buffer> aCommandBuffer, VkClearColorValue aClearColor, image::layout aCurrentImageLayout = SHADER_READ_ONLY_OPTIMAL, uint32_t aStartingArrayLayer = 0, uint32_t aArrayLayerCount = UINT32_MAX);
-		void clear_depth(std::shared_ptr<command_buffer> aCommandBuffer, VkClearDepthStencilValue aClearDepthStencil, image::layout aCurrentImageLayout = SHADER_READ_ONLY_OPTIMAL, uint32_t aStartingArrayLayer = 0, uint32_t aArrayLayerCount = UINT32_MAX);
+		void clear(command_buffer* aCommandBuffer, VkClearColorValue aClearColor, image::layout aCurrentImageLayout = SHADER_READ_ONLY_OPTIMAL, uint32_t aStartingArrayLayer = 0, uint32_t aArrayLayerCount = UINT32_MAX);
+		void clear_depth(command_buffer* aCommandBuffer, VkClearDepthStencilValue aClearDepthStencil, image::layout aCurrentImageLayout = SHADER_READ_ONLY_OPTIMAL, uint32_t aStartingArrayLayer = 0, uint32_t aArrayLayerCount = UINT32_MAX);
 
 		// Immediate Operations
 		VkResult copy(VkOffset3D aDestinationOffset, uint32_t aDestinationArrayLayer, std::shared_ptr<buffer> aSourceData, size_t aSourceOffset, VkExtent3D aRegionExtent, uint32_t aArrayLayerCount = UINT32_MAX);

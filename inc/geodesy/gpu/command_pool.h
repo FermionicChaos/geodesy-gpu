@@ -20,6 +20,11 @@ namespace geodesy::gpu {
 		std::shared_ptr<command_buffer> allocate_command_buffer(VkCommandBufferLevel aLevel = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 		std::vector<std::shared_ptr<command_buffer>> allocate_command_buffers(size_t aCount = 1, VkCommandBufferLevel aLevel = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
+		template<typename T, typename... Args>
+		std::shared_ptr<T> create(Args&&... args) {
+			return geodesy::make<T>(this->Context, this->shared_from_this(), std::forward<Args>(args)...);
+		}
+
 	};
 	
 }

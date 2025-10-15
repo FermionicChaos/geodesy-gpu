@@ -16,13 +16,11 @@ namespace geodesy::gpu {
 
 		command_buffer();
 		command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBuffer aHandle);
-		~command_buffer();
+		command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBufferLevel aLevel = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+		virtual ~command_buffer();
 
 		VkResult begin();
 		VkResult end();
-
-		void begin_rendering(VkRect2D aRenderArea, std::vector<VkImageView> aColorAttachments, VkImageView aDepthAttachment = VK_NULL_HANDLE, VkImageView aStencilAttachment = VK_NULL_HANDLE);
-		void end_rendering();
 
 		void bind_vertex_buffers(VkCommandBuffer aCommandBuffer, std::vector<VkBuffer> aBufferList, const VkDeviceSize* aOffset = NULL);
 		void bind_index_buffer(VkCommandBuffer aCommandBuffer, VkBuffer aBufferHandle, VkIndexType aIndexType);
