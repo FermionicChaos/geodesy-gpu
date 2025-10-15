@@ -2,9 +2,7 @@
 
 namespace geodesy::gpu {
 
-	executable_call::executable_call() {
-
-	}
+	executable_call::executable_call() {}
 
 	executable_call::executable_call(
 		std::shared_ptr<context> 									aContext,

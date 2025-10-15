@@ -69,9 +69,9 @@ namespace geodesy::gpu {
 		};
 
 		struct create_info {
-			unsigned int Memory;
-			unsigned int Usage;
-			std::size_t ElementCount;
+			unsigned int 	Memory;
+			unsigned int 	Usage;
+			std::size_t 	ElementCount;
 			create_info();
 			create_info(unsigned int aMemoryType, unsigned int aBufferUsage);
 		};

@@ -351,12 +351,12 @@ namespace geodesy::gpu {
 		};
 
 		struct create_info {
-			int Layout;
-			int Sample;
-			int Tiling;
-			int Memory;
-			int Usage;
-			bool MipLevels;
+			int 	Layout;
+			int 	Sample;
+			int 	Tiling;
+			int 	Memory;
+			int 	Usage;
+			bool 	MipLevels;
 			create_info();
 			create_info(int aSample, int aTiling, int aMemory, int aUsage);
 		};
