@@ -24,7 +24,9 @@ namespace geodesy::gpu {
 		this->Framebuffer = aContext->create<framebuffer>(aRasterizationPipeline, aImage, Rasterizer->Resolution);
 
 		// Allocate Descriptor Set Array
-		this->DescriptorArray = aContext->create<descriptor::array>(aRasterizationPipeline);
+		if (Rasterizer->DescriptorSetLayoutBinding.size() > 0) {
+			this->DescriptorArray = aContext->create<descriptor::array>(aRasterizationPipeline);
+		}
 
 		// Bind Resources to Descriptor Sets
 		for (auto& [SetBinding, Resource] : aUniformSetBinding) {

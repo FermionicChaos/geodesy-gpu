@@ -159,7 +159,7 @@ namespace geodesy::gpu {
 		this->Multisample.sType 							= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		this->Multisample.pNext 							= NULL;
 		this->Multisample.flags 							= 0;
-		//this->Multisample.rasterizationSamples		= (VkSampleCountFlagBits)0;
+		this->Multisample.rasterizationSamples				= VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
 		this->Multisample.sampleShadingEnable 				= VK_FALSE;
 		this->Multisample.minSampleShading 					= 1.0f;
 		this->Multisample.pSampleMask 						= NULL;
@@ -1434,7 +1434,7 @@ namespace geodesy::gpu {
 		}
 
 		// Generate Descriptor Set Pool.
-		if (Result == VK_SUCCESS) {
+		if ((Result == VK_SUCCESS) && (aDescriptorSetLayoutBinding.size() > 0)) {
 			std::vector<VkDescriptorPoolSize> DescriptorPoolSize = this->descriptor_pool_sizes();
 			VkDescriptorPoolCreateInfo DPCI{};
 			DPCI.sType 				= VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
