@@ -310,7 +310,7 @@ namespace geodesy::gpu {
 			// Print Inputs
 			std::cout << "----- Vertex Input Attributes -----" << std::endl;
 			for (size_t i = 0; i < this->VertexAttribute.size(); i++) {
-				std::cout << "layout (location = " << i << ") in " << this->VertexAttribute[i].Variable;
+				std::cout << "layout (location = " << i << ") in " << this->VertexAttribute[i].Variable->name << std::endl;
 			}
 			std::cout << std::endl;
 
@@ -324,7 +324,7 @@ namespace geodesy::gpu {
 			// Print Outputs
 			std::cout << "----- Framebuffer Attachment Outputs -----" << std::endl;
 			for (size_t i = 0; i < this->ColorAttachment.size(); i++) {
-				std::cout << "layout (location = " << i << ") out " << this->ColorAttachment[i].Variable;
+				std::cout << "layout (location = " << i << ") out " << this->ColorAttachment[i].Variable->name << std::endl;
 			}
 			std::cout << std::endl;
 
