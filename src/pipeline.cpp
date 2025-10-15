@@ -1209,8 +1209,8 @@ namespace geodesy::gpu {
 
 	void pipeline::raytrace(
 		command_buffer* 											aCommandBuffer,
-		std::shared_ptr<descriptor::array> 							aDescriptorArray,
-		std::array<unsigned int, 3> 								aResolution
+		std::array<unsigned int, 3> 								aResolution,
+		std::shared_ptr<descriptor::array> 							aDescriptorArray
 	) {
 		PFN_vkCmdTraceRaysKHR vkCmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR)this->Context->function_pointer("vkCmdTraceRaysKHR");
 		this->bind(aCommandBuffer, {}, nullptr, aDescriptorArray);
@@ -1227,7 +1227,7 @@ namespace geodesy::gpu {
 	}
 
 	void pipeline::dispatch(
-		command_buffer* 											aCommandBuffer,
+		command_buffer* 				 							aCommandBuffer,
 		std::array<unsigned int, 3> 								aThreadGroupCount,
 		std::shared_ptr<descriptor::array> 							aDescriptorArray
 	) {
@@ -1260,8 +1260,7 @@ namespace geodesy::gpu {
 		std::vector<std::shared_ptr<image>> 						aImage,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
-		std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer,
-		std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage
+		std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding
 	) {
 		// Error code tracking.
 		VkResult Result = VK_SUCCESS;
@@ -1275,14 +1274,25 @@ namespace geodesy::gpu {
 		auto Framebuffer = this->Context->create<framebuffer>(this->shared_from_this(), aImage, Rasterizer->Resolution);
 		auto DescriptorArray = this->Context->create<descriptor::array>(this->shared_from_this());
 
-		// Bind uniform buffers.
-		for (auto& [SetBinding, Buffer] : aUniformBuffer) {
-			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Buffer->Handle);
-		}
-
-		// Bind sampler images.
-		for (auto& [SetBinding, Image] : aSamplerImage) {
-			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Image->View, image::layout::SHADER_READ_ONLY_OPTIMAL);
+		// Bind Resources to Descriptor Sets
+		for (auto& [SetBinding, Resource] : aUniformSetBinding) {
+			switch(Resource->Type) {
+			case resource::type::BUFFER: {
+				// Bind Buffer resources
+				std::shared_ptr<buffer> BufferResource = std::dynamic_pointer_cast<buffer>(Resource);
+				DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, BufferResource->Handle);
+				}
+				break;
+			case resource::type::IMAGE: {
+				// Bind Image resources
+				std::shared_ptr<image> ImageResource = std::dynamic_pointer_cast<image>(Resource);
+				DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, ImageResource->View);
+				}
+				break;
+			default:
+				// Unsupported resource type
+				break;
+			}
 		}
 
 		// Write Command Buffer here.
@@ -1299,11 +1309,43 @@ namespace geodesy::gpu {
 	VkResult pipeline::raytrace(
 		std::shared_ptr<image> 										aOutputImage,
 		std::shared_ptr<acceleration_structure> 					aTLAS,
-		std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer,
-		std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage
+		std::array<unsigned int, 3> 								aResolution,
+		std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding
 	) {
 		VkResult Result = VK_SUCCESS;
-		// TODO: This is an immediate mode execution.
+		
+		auto CommandPool = this->Context->create<command_pool>(device::operation::GRAPHICS);
+		auto CommandBuffer = CommandPool->create<command_buffer>();
+		auto DescriptorArray = this->Context->create<descriptor::array>(this->shared_from_this());
+
+		// Bind Resources to Descriptor Sets
+		for (auto& [SetBinding, Resource] : aUniformSetBinding) {
+			switch(Resource->Type) {
+			case resource::type::BUFFER: {
+				// Bind Buffer resources
+				std::shared_ptr<buffer> BufferResource = std::dynamic_pointer_cast<buffer>(Resource);
+				DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, BufferResource->Handle);
+				}
+				break;
+			case resource::type::IMAGE: {
+				// Bind Image resources
+				std::shared_ptr<image> ImageResource = std::dynamic_pointer_cast<image>(Resource);
+				DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, ImageResource->View);
+				}
+				break;
+			default:
+				// Unsupported resource type
+				break;
+			}
+		}
+
+		Result = CommandBuffer->begin();
+		this->raytrace(CommandBuffer.get(), aResolution, DescriptorArray);
+		Result = CommandBuffer->end();
+
+		// Execute Command Buffer here.
+		Result = this->Context->execute_and_wait(device::operation::GRAPHICS, CommandBuffer);
+
 		return Result;
 	}
 
@@ -1312,13 +1354,12 @@ namespace geodesy::gpu {
 		std::shared_ptr<descriptor::array> 							aDescriptorArray
 	) {
 		VkResult Result = VK_SUCCESS;
-
-		// Allocated GPU Resources needed to execute.
+		
 		auto CommandPool = this->Context->create<command_pool>(device::operation::COMPUTE);
 		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		Result = CommandBuffer->begin();
-		this->dispatch(CommandBuffer.get(), aThreadGroupCount, aDescriptorArray);
+		this->raytrace(CommandBuffer.get(), aThreadGroupCount, aDescriptorArray);
 		Result = CommandBuffer->end();
 
 		// Execute Command Buffer here.
@@ -1329,25 +1370,43 @@ namespace geodesy::gpu {
 
 	VkResult pipeline::dispatch(
 		std::array<unsigned int, 3> 								aThreadGroupCount,
-		std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aBuffers,
-		std::map<std::pair<int, int>, std::shared_ptr<image>> 		aImages
+		std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding
 	) {
 		VkResult Result = VK_SUCCESS;
-
-		// Create Descriptor Array if not provided.
+		
+		auto CommandPool = this->Context->create<command_pool>(device::operation::COMPUTE);
+		auto CommandBuffer = CommandPool->create<command_buffer>();
 		auto DescriptorArray = this->Context->create<descriptor::array>(this->shared_from_this());
 
-		// Bind uniform buffers.
-		for (auto& [SetBinding, Buffer] : aBuffers) {
-			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Buffer->Handle);
+		// Bind Resources to Descriptor Sets
+		for (auto& [SetBinding, Resource] : aUniformSetBinding) {
+			switch(Resource->Type) {
+			case resource::type::BUFFER: {
+				// Bind Buffer resources
+				std::shared_ptr<buffer> BufferResource = std::dynamic_pointer_cast<buffer>(Resource);
+				DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, BufferResource->Handle);
+				}
+				break;
+			case resource::type::IMAGE: {
+				// Bind Image resources
+				std::shared_ptr<image> ImageResource = std::dynamic_pointer_cast<image>(Resource);
+				DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, ImageResource->View);
+				}
+				break;
+			default:
+				// Unsupported resource type
+				break;
+			}
 		}
 
-		// Bind sampler images.
-		for (auto& [SetBinding, Image] : aImages) {
-			DescriptorArray->bind(SetBinding.first, SetBinding.second, 0, Image->View, image::layout::SHADER_READ_ONLY_OPTIMAL);
-		}
+		Result = CommandBuffer->begin();
+		this->raytrace(CommandBuffer.get(), aThreadGroupCount, DescriptorArray);
+		Result = CommandBuffer->end();
 
-		return this->dispatch(aThreadGroupCount, DescriptorArray);
+		// Execute Command Buffer here.
+		Result = this->Context->execute_and_wait(device::operation::COMPUTE, CommandBuffer);
+
+		return Result;
 	}
 
 	std::vector<VkDescriptorPoolSize> pipeline::descriptor_pool_sizes() const {

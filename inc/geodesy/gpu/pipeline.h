@@ -267,8 +267,8 @@ namespace geodesy::gpu {
 		// Raytracing API
 		void raytrace(
 			command_buffer* 				 							aCommandBuffer,
-			std::shared_ptr<descriptor::array> 							aDescriptorArray,
-			std::array<unsigned int, 3> 								aResolution
+			std::array<unsigned int, 3> 								aResolution,
+			std::shared_ptr<descriptor::array> 							aDescriptorArray
 		);
 		// Compute API
 		void dispatch(
@@ -289,15 +289,14 @@ namespace geodesy::gpu {
 			std::vector<std::shared_ptr<image>> 						aImage,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
-			std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer = {},
-			std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage = {}
+			std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding = {}
 		);
 		// Raytracing API
 		VkResult raytrace(
 			std::shared_ptr<image> 										aOutputImage,
 			std::shared_ptr<acceleration_structure> 					aTLAS,
-			std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aUniformBuffer = {},
-			std::map<std::pair<int, int>, std::shared_ptr<image>> 		aSamplerImage = {}
+			std::array<unsigned int, 3> 								aResolution,
+			std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding = {}
 		);
 		// Compute API
 		VkResult dispatch(
@@ -306,8 +305,7 @@ namespace geodesy::gpu {
 		);
 		VkResult dispatch(
 			std::array<unsigned int, 3> 								aThreadGroupCount,
-			std::map<std::pair<int, int>, std::shared_ptr<buffer>> 		aBuffers,
-			std::map<std::pair<int, int>, std::shared_ptr<image>> 		aImages = {}
+			std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding = {}
 		);
 
 		std::vector<VkDescriptorPoolSize> descriptor_pool_sizes() const;
