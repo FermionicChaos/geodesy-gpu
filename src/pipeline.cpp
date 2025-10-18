@@ -3,8 +3,6 @@
 
 #include "glslang_util.h"
 
-#include <iostream>
-
 namespace geodesy::gpu {
 
 	void pipeline::create_info::generate_descriptor_set_layout_binding() {
@@ -119,82 +117,17 @@ namespace geodesy::gpu {
 	}
 
 	pipeline::rasterizer::rasterizer() {
-		this->BindPoint 									= type::RASTERIZER;
-		this->InputAssembly 								= {};
-		this->Tesselation 									= {};
-		this->Viewport 										= {};
-		this->Rasterizer 									= {};
-		this->Multisample 									= {};
-		this->DepthStencil 									= {};
-		this->ColorBlend 									= {};
-		this->DynamicState 									= {};
-
-		this->InputAssembly.sType 							= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		this->InputAssembly.pNext 							= NULL;
-		this->InputAssembly.flags 							= 0;
-
-		this->Tesselation.sType 							= VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
-		this->Tesselation.pNext 							= NULL;
-		this->Tesselation.flags 							= 0;
-
-		this->Viewport.sType 								= VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		this->Viewport.pNext 								= NULL;
-		this->Viewport.flags 								= 0;
-
-		this->Rasterizer.sType 								= VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		this->Rasterizer.pNext 								= NULL;
-		this->Rasterizer.flags 								= 0;
-
-		this->Rasterizer.depthClampEnable 					= VK_FALSE;
-		this->Rasterizer.rasterizerDiscardEnable 			= VK_FALSE;
-		this->Rasterizer.polygonMode 						= VK_POLYGON_MODE_FILL;
-		this->Rasterizer.cullMode 							= VK_CULL_MODE_NONE;
-		this->Rasterizer.frontFace 							= VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		this->Rasterizer.depthBiasEnable 					= VK_FALSE;
-		this->Rasterizer.depthBiasConstantFactor 			= 0.0f;
-		this->Rasterizer.depthBiasClamp 					= 0.0f;
-		this->Rasterizer.depthBiasSlopeFactor 				= 0.0f;
-		this->Rasterizer.lineWidth 							= 1.0f;
-
-		this->Multisample.sType 							= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-		this->Multisample.pNext 							= NULL;
-		this->Multisample.flags 							= 0;
-		this->Multisample.rasterizationSamples				= VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
-		this->Multisample.sampleShadingEnable 				= VK_FALSE;
-		this->Multisample.minSampleShading 					= 1.0f;
-		this->Multisample.pSampleMask 						= NULL;
-		this->Multisample.alphaToCoverageEnable 			= VK_FALSE;
-		this->Multisample.alphaToOneEnable 					= VK_FALSE;
-
-		this->DepthStencil.sType 							= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		this->DepthStencil.pNext 							= NULL;
-		this->DepthStencil.flags 							= 0;
-		this->DepthStencil.depthTestEnable 					= VK_FALSE;
-		this->DepthStencil.depthWriteEnable 				= VK_FALSE;
-		this->DepthStencil.depthCompareOp 					= VK_COMPARE_OP_GREATER_OR_EQUAL; // Camera, +z is closer.
-		this->DepthStencil.depthBoundsTestEnable 			= VK_FALSE;
-		this->DepthStencil.stencilTestEnable 				= VK_FALSE;
-		this->DepthStencil.front 							= {};
-		this->DepthStencil.back 							= {};
-		this->DepthStencil.minDepthBounds 					= 0.0f;
-		this->DepthStencil.maxDepthBounds 					= 1.0f;
-
-		this->ColorBlend.sType 								= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		this->ColorBlend.pNext 								= NULL;
-		this->ColorBlend.flags 								= 0;
-		this->ColorBlend.logicOpEnable 						= VK_FALSE;
-		this->ColorBlend.logicOp 							= VK_LOGIC_OP_COPY;
-		this->ColorBlend.attachmentCount 					= 0;
-		this->ColorBlend.pAttachments 						= NULL;
-		this->ColorBlend.blendConstants[0] 					= 0.0f;
-		this->ColorBlend.blendConstants[1] 					= 0.0f;
-		this->ColorBlend.blendConstants[2] 					= 0.0f;
-		this->ColorBlend.blendConstants[3] 					= 0.0f;
-
-		this->DynamicState.sType 							= VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		this->DynamicState.pNext 							= NULL;
-		this->DynamicState.flags 							= 0;
-
+		this->BindPoint 											= type::RASTERIZER;
+		this->PrimitiveTopology										= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		this->MinDepth												= 0.0f;
+		this->MaxDepth												= 1.0f;
+		this->PolygonMode											= VK_POLYGON_MODE_FILL;
+		this->CullMode												= VK_CULL_MODE_NONE;
+		this->FrontFace												= VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		this->LineWidth												= 1.0f;
+		this->DepthTestEnable										= false;
+		this->DepthWriteEnable										= true;
+		this->DepthCompareOp										= VK_COMPARE_OP_LESS;
 		this->DepthStencilAttachment.Description.flags 				= 0;
 		this->DepthStencilAttachment.Description.format 			= VK_FORMAT_UNDEFINED;
 		this->DepthStencilAttachment.Description.samples 			= VK_SAMPLE_COUNT_1_BIT;
@@ -206,12 +139,8 @@ namespace geodesy::gpu {
 		this->DepthStencilAttachment.Description.finalLayout 		= VK_IMAGE_LAYOUT_UNDEFINED;
 	}
 
-	pipeline::rasterizer::rasterizer(std::vector<std::shared_ptr<shader>> aShaderList, std::array<unsigned int, 3> aResolution) : rasterizer() {
+	pipeline::rasterizer::rasterizer(std::vector<std::shared_ptr<shader>> aShaderList) : rasterizer() {
 		bool Success = true;
-
-		this->Resolution = aResolution;
-		this->DefaultViewport.push_back({ 0.0f, 0.0f, (float)aResolution[0], (float)aResolution[1], 0.0f, 1.0f });
-		this->DefaultScissor.push_back({ { 0, 0 }, { aResolution[0], aResolution[1] } });
 
 		// Load shaders.
 		this->Shader = aShaderList;
@@ -237,7 +166,7 @@ namespace geodesy::gpu {
 
 			// Check if Link was successful
 			if (!Success) {
-				std::cout << this->Program->getInfoLog() << std::endl;
+				throw std::runtime_error("Failed to link shader stages for rasterization pipeline: " + std::string(this->Program->getInfoLog()));
 			}
 		}
 		else {
@@ -249,9 +178,6 @@ namespace geodesy::gpu {
 		if (Success) {
 			// Generates API Reflection.
 			this->Program->buildReflection(EShReflectionAllIOVariables);
-
-			// DISABLED: Create Descriptor Set Layouts to max spec required minimum (4).
-			// this->DescriptorSetLayoutBinding.resize(GPU_DESCRIPTOR_SET_COUNT);
 
 			// -------------------- START -------------------- //
 
@@ -304,40 +230,16 @@ namespace geodesy::gpu {
 
 			// Generates Descriptor Set Layout Bindings.
 			this->generate_descriptor_set_layout_binding();
-
-			std::cout << "// -------------------- Rasterization Pipeline Reflection Start -------------------- \\\\" << std::endl << std::endl;
-
-			// Print Inputs
-			std::cout << "----- Vertex Input Attributes -----" << std::endl;
-			for (size_t i = 0; i < this->VertexAttribute.size(); i++) {
-				std::cout << "layout (location = " << i << ") in " << this->VertexAttribute[i].Variable->name << std::endl;
-			}
-			std::cout << std::endl;
-
-			// Print Uniforms
-			std::cout << "----- Uniform Objects -----" << std::endl;
-			for (auto& Variable : this->DescriptorSetVariable) {
-				std::cout << "layout (set = " << Variable.first.first << ", binding = " << Variable.first.second << ") uniform " << Variable.second;
-			}
-			std::cout << std::endl;
-
-			// Print Outputs
-			std::cout << "----- Framebuffer Attachment Outputs -----" << std::endl;
-			for (size_t i = 0; i < this->ColorAttachment.size(); i++) {
-				std::cout << "layout (location = " << i << ") out " << this->ColorAttachment[i].Variable->name << std::endl;
-			}
-			std::cout << std::endl;
-
-			std::cout << "\\\\ -------------------- Rasterization Pipeline Reflection End -------------------- //" << std::endl;
+			
 		}
 		else {
 			// Linking failed.
 			Success = false;
 		}
 
+		// Setup default blending rules for each color attachment.
 		this->AttachmentBlendingRules = std::vector<VkPipelineColorBlendAttachmentState>(this->ColorAttachment.size());
 		for (size_t i = 0; i < AttachmentBlendingRules.size(); i++) {
-			// Default blending operations I like.
 			AttachmentBlendingRules[i].blendEnable					= VK_FALSE;
 			AttachmentBlendingRules[i].srcColorBlendFactor			= VK_BLEND_FACTOR_SRC_ALPHA;
 			AttachmentBlendingRules[i].dstColorBlendFactor			= VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
@@ -347,13 +249,6 @@ namespace geodesy::gpu {
 			AttachmentBlendingRules[i].alphaBlendOp					= VK_BLEND_OP_ADD;
 			AttachmentBlendingRules[i].colorWriteMask				= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 		}
-
-		this->Viewport.viewportCount = this->DefaultViewport.size();
-		this->Viewport.pViewports = this->DefaultViewport.data();
-		this->Viewport.scissorCount = this->DefaultScissor.size();
-		this->Viewport.pScissors = this->DefaultScissor.data();
-		this->ColorBlend.attachmentCount = this->AttachmentBlendingRules.size();
-		this->ColorBlend.pAttachments = this->AttachmentBlendingRules.data();
 
 		// Generate SPIRV code.
 		if (Success) {
@@ -415,22 +310,16 @@ namespace geodesy::gpu {
 	void pipeline::rasterizer::attach(uint32_t aAttachmentIndex, image::format aFormat, image::layout aImageLayout) {
 		if (aAttachmentIndex < this->ColorAttachment.size()) {
 			this->ColorAttachment[aAttachmentIndex].Description.format			= (VkFormat)aFormat;
-			this->ColorAttachment[aAttachmentIndex].Description.samples			= (VkSampleCountFlagBits)this->Multisample.rasterizationSamples;
+			this->ColorAttachment[aAttachmentIndex].Description.samples			= VK_SAMPLE_COUNT_1_BIT;
 			this->ColorAttachment[aAttachmentIndex].Description.initialLayout	= (VkImageLayout)aImageLayout;
 			this->ColorAttachment[aAttachmentIndex].Description.finalLayout		= (VkImageLayout)aImageLayout;
 		}
 		else if (aAttachmentIndex == this->ColorAttachment.size()) {
 			this->DepthStencilAttachment.Description.format						= (VkFormat)aFormat;
-			this->DepthStencilAttachment.Description.samples					= (VkSampleCountFlagBits)this->Multisample.rasterizationSamples;
+			this->DepthStencilAttachment.Description.samples					= VK_SAMPLE_COUNT_1_BIT;
 			this->DepthStencilAttachment.Description.initialLayout				= (VkImageLayout)aImageLayout;
 			this->DepthStencilAttachment.Description.finalLayout				= (VkImageLayout)aImageLayout;
 		}
-	}
-
-	void pipeline::rasterizer::resize(std::array<unsigned int, 3> aResolution) {
-		this->Resolution = aResolution;
-		this->DefaultScissor[0] = { { 0, 0 }, { aResolution[0], aResolution[1] } };
-		this->DefaultViewport[0] = { 0.0f, 0.0f, (float)aResolution[0], (float)aResolution[1], 0.0f, 1.0f };
 	}
 
 	pipeline::raytracer::raytracer() {
@@ -481,7 +370,7 @@ namespace geodesy::gpu {
 
 			// Check if Link was successful
 			if (!Success) {
-				std::cout << this->Program->getInfoLog() << std::endl;
+				throw std::runtime_error("Failed to link shader stages for ray tracing pipeline: " + std::string(this->Program->getInfoLog()));
 			}
 		}
 
@@ -492,17 +381,6 @@ namespace geodesy::gpu {
 			// Generates Descriptor Set Layout Bindings.
 			this->generate_descriptor_set_layout_binding();
 		
-			// Debug output for ray tracing pipeline reflection
-			std::cout << "// -------------------- Ray Tracing Pipeline Reflection Start -------------------- \\\\" << std::endl << std::endl;
-		
-			// Print Uniforms
-			std::cout << "----- Uniform Objects -----" << std::endl;
-			for (auto& Variable : this->DescriptorSetVariable) {
-				std::cout << "layout (set = " << Variable.first.first << ", binding = " << Variable.first.second << ") uniform " << Variable.second;
-			}
-			std::cout << std::endl;
-		
-			std::cout << "\\\\ -------------------- Ray Tracing Pipeline Reflection End -------------------- //" << std::endl;
 		}
 
 		// Generate SPIRV code.
@@ -548,7 +426,7 @@ namespace geodesy::gpu {
 
 		// Check if Link was successful
 		if (!Success) {
-			std::cout << this->Program->getInfoLog() << std::endl;
+			throw std::runtime_error("Failed to link shader stages for compute pipeline: " + std::string(this->Program->getInfoLog()));
 		}
 
 		// Build and acquire reflection variables.
@@ -558,17 +436,6 @@ namespace geodesy::gpu {
 			// Generates Descriptor Set Layout Bindings.
 			this->generate_descriptor_set_layout_binding();
 
-			// Debug output for compute pipeline reflection
-			std::cout << "// -------------------- Compute Pipeline Reflection Start -------------------- \\\\" << std::endl << std::endl;
-		
-			// Print Uniforms
-			std::cout << "----- Uniform Objects -----" << std::endl;
-			for (auto& Variable : this->DescriptorSetVariable) {
-				std::cout << "layout (set = " << Variable.first.first << ", binding = " << Variable.first.second << ") uniform " << Variable.second->name << ";" << std::endl;
-			}
-			std::cout << std::endl;
-
-			std::cout << "\\\\ -------------------- Compute Pipeline Reflection End -------------------- //" << std::endl;
 		}
 
 		// Generate SPIRV code.
@@ -736,6 +603,116 @@ namespace geodesy::gpu {
 			Input.vertexAttributeDescriptionCount						= VertexAttributeDescription.size();
 			Input.pVertexAttributeDescriptions							= VertexAttributeDescription.data();
 
+			// Vulkan Objects
+			VkPipelineInputAssemblyStateCreateInfo InputAssembly = {};
+			VkPipelineTessellationStateCreateInfo Tesselation = {};
+			VkPipelineViewportStateCreateInfo Viewport = {};
+			VkPipelineRasterizationStateCreateInfo Rasterizer = {};
+			VkPipelineMultisampleStateCreateInfo Multisample = {};
+			VkPipelineDepthStencilStateCreateInfo DepthStencil = {};
+			VkPipelineColorBlendStateCreateInfo	ColorBlend = {};
+			VkPipelineDynamicStateCreateInfo DynamicState = {};
+
+			InputAssembly.sType 							= VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+			InputAssembly.pNext 							= NULL;
+			InputAssembly.flags 							= 0;
+			InputAssembly.topology 							= aRasterizer->PrimitiveTopology;
+			InputAssembly.primitiveRestartEnable 			= VK_FALSE;
+
+			Tesselation.sType 								= VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+			Tesselation.pNext 								= NULL;
+			Tesselation.flags 								= 0;
+
+			// Describes subset of target image to render to.
+			VkViewport View{};
+			View.x 											= 0.0f;
+			View.y 											= 0.0f;
+			View.width 										= (float)aRasterizer->Resolution[0];
+			View.height 									= (float)aRasterizer->Resolution[1];
+			View.minDepth 									= aRasterizer->MinDepth;
+			View.maxDepth 									= aRasterizer->MaxDepth;
+
+			// Determines which pixels get written to. 
+			VkRect2D Scissor{};
+			Scissor.offset.x 								= 0;
+			Scissor.offset.y 								= 0;
+			Scissor.extent.width 							= aRasterizer->Resolution[0];
+			Scissor.extent.height 							= aRasterizer->Resolution[1];
+
+			// Both are stupid options, just tie to resolution.
+			Viewport.sType 									= VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+			Viewport.pNext 									= NULL;
+			Viewport.flags 									= 0;
+			Viewport.viewportCount 							= 1;
+			Viewport.pViewports 							= &View;
+			Viewport.scissorCount 							= 1;
+			Viewport.pScissors 								= &Scissor;			
+
+			// Depth Clamp seems stupid, don't care about it.
+			Rasterizer.sType 								= VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+			Rasterizer.pNext 								= NULL;
+			Rasterizer.flags 								= 0;
+			Rasterizer.depthClampEnable 					= VK_FALSE;
+			Rasterizer.rasterizerDiscardEnable 				= VK_FALSE;
+			Rasterizer.polygonMode 							= aRasterizer->PolygonMode;
+			Rasterizer.cullMode 							= aRasterizer->CullMode;
+			Rasterizer.frontFace 							= aRasterizer->FrontFace;
+			Rasterizer.depthBiasEnable 						= VK_FALSE;
+			Rasterizer.depthBiasConstantFactor 				= 0.0f;
+			Rasterizer.depthBiasClamp 						= 0.0f;
+			Rasterizer.depthBiasSlopeFactor 				= 0.0f;
+			Rasterizer.lineWidth 							= aRasterizer->LineWidth;
+
+			// Disabled By Default
+			Multisample.sType 								= VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+			Multisample.pNext 								= NULL;
+			Multisample.flags 								= 0;
+			Multisample.rasterizationSamples				= VK_SAMPLE_COUNT_1_BIT;
+			Multisample.sampleShadingEnable 				= VK_FALSE;
+			Multisample.minSampleShading 					= 1.0f;
+			Multisample.pSampleMask 						= NULL;
+			Multisample.alphaToCoverageEnable 				= VK_FALSE;
+			Multisample.alphaToOneEnable 					= VK_FALSE;
+
+			// I don't care about stencil stuff, depth bounds is redundant, suppress.
+			DepthStencil.sType 								= VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+			DepthStencil.pNext 								= NULL;
+			DepthStencil.flags 								= 0;
+			DepthStencil.depthTestEnable 					= aRasterizer->DepthTestEnable;
+			DepthStencil.depthWriteEnable 					= aRasterizer->DepthWriteEnable;
+			DepthStencil.depthCompareOp 					= aRasterizer->DepthCompareOp;
+			DepthStencil.depthBoundsTestEnable 				= VK_FALSE;
+			DepthStencil.stencilTestEnable 					= VK_FALSE;
+			DepthStencil.front 								= {};
+			DepthStencil.back 								= {};
+			DepthStencil.minDepthBounds 					= 0.0f;
+			DepthStencil.maxDepthBounds 					= 1.0f;
+
+			ColorBlend.sType 								= VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+			ColorBlend.pNext 								= NULL;
+			ColorBlend.flags 								= 0;
+			ColorBlend.logicOpEnable 						= VK_FALSE;
+			ColorBlend.logicOp 								= VK_LOGIC_OP_COPY;
+			ColorBlend.attachmentCount 						= aRasterizer->AttachmentBlendingRules.size();
+			ColorBlend.pAttachments 						= aRasterizer->AttachmentBlendingRules.data();
+			ColorBlend.blendConstants[0] 					= 0.0f;
+			ColorBlend.blendConstants[1] 					= 0.0f;
+			ColorBlend.blendConstants[2] 					= 0.0f;
+			ColorBlend.blendConstants[3] 					= 0.0f;
+
+			// Default Enabled Dynamic State.
+			std::vector<VkDynamicState> DynamicStates {
+				VK_DYNAMIC_STATE_VIEWPORT,
+				VK_DYNAMIC_STATE_SCISSOR
+			};
+
+			DynamicState.sType 								= VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+			DynamicState.pNext 								= NULL;
+			DynamicState.flags 								= 0;
+			DynamicState.dynamicStateCount 					= DynamicStates.size();
+			DynamicState.pDynamicStates 					= DynamicStates.data();
+
+
 			// Create Rasterizer Create Info Struct.
 			VkGraphicsPipelineCreateInfo RasterizerCreateInfo {};
 			RasterizerCreateInfo.sType							= VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -744,25 +721,25 @@ namespace geodesy::gpu {
 			RasterizerCreateInfo.stageCount						= this->Stage.size();
 			RasterizerCreateInfo.pStages						= this->Stage.data();
 			RasterizerCreateInfo.pVertexInputState				= &Input;
-			RasterizerCreateInfo.pInputAssemblyState			= &aRasterizer->InputAssembly;
+			RasterizerCreateInfo.pInputAssemblyState			= &InputAssembly;
 			if (TesselationControlShaderExists && TesselationEvaluationShaderExists) {
-				RasterizerCreateInfo.pTessellationState				= &aRasterizer->Tesselation;
+				RasterizerCreateInfo.pTessellationState				= &Tesselation;
 			}
 			else {
 				RasterizerCreateInfo.pTessellationState				= NULL;
 			}
-			RasterizerCreateInfo.pViewportState					= &aRasterizer->Viewport;
-			RasterizerCreateInfo.pRasterizationState			= &aRasterizer->Rasterizer;
-			RasterizerCreateInfo.pMultisampleState				= &aRasterizer->Multisample;
+			RasterizerCreateInfo.pViewportState					= &Viewport;
+			RasterizerCreateInfo.pRasterizationState			= &Rasterizer;
+			RasterizerCreateInfo.pMultisampleState				= &Multisample;
 			if (aRasterizer->DepthStencilAttachment.Description.format != VK_FORMAT_UNDEFINED) {
-				RasterizerCreateInfo.pDepthStencilState				= &aRasterizer->DepthStencil;
+				RasterizerCreateInfo.pDepthStencilState				= &DepthStencil;
 			}
 			else {
 				RasterizerCreateInfo.pDepthStencilState				= NULL;
 			}
-			RasterizerCreateInfo.pColorBlendState					= &aRasterizer->ColorBlend;
+			RasterizerCreateInfo.pColorBlendState					= &ColorBlend;
 			if (false) {
-				RasterizerCreateInfo.pDynamicState					= &aRasterizer->DynamicState;
+				RasterizerCreateInfo.pDynamicState					= &DynamicState;
 			}
 			else {
 				RasterizerCreateInfo.pDynamicState					= NULL;

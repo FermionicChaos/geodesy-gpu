@@ -120,21 +120,6 @@ namespace geodesy::gpu {
 				const glslang::TObjectReflection* 		Variable;
 			};
 
-			// Vulkan Objects
-			VkPipelineInputAssemblyStateCreateInfo						InputAssembly;
-			VkPipelineTessellationStateCreateInfo						Tesselation;
-			VkPipelineViewportStateCreateInfo							Viewport;
-			VkPipelineRasterizationStateCreateInfo						Rasterizer;
-			VkPipelineMultisampleStateCreateInfo						Multisample;
-			VkPipelineDepthStencilStateCreateInfo						DepthStencil;
-			VkPipelineColorBlendStateCreateInfo							ColorBlend;
-			VkPipelineDynamicStateCreateInfo							DynamicState;
-
-			std::array<unsigned int, 3> 								Resolution;
-			std::vector<VkViewport> 									DefaultViewport;
-			std::vector<VkRect2D> 										DefaultScissor;
-			std::vector<VkPipelineColorBlendAttachmentState> 			AttachmentBlendingRules;
-
 			// Vertex metadata
 			std::vector<VkVertexInputBindingDescription> 				VertexBufferBindingDescription;		// Vulkan Spec Minimum Req: 16 Vertex Buffer Bindings
 			std::vector<attribute> 										VertexAttribute;					// Vulkan Spec Minimum Req: 16 Vertex Attributes
@@ -143,8 +128,22 @@ namespace geodesy::gpu {
 			std::vector<attachment> 									ColorAttachment;					// Vulkan Spec Minimum Req: 4 Attachments
 			attachment 													DepthStencilAttachment;
 
+			// Fixed Function Options.
+			std::array<unsigned int, 3> 								Resolution;
+			VkPrimitiveTopology 										PrimitiveTopology;
+			float 														MinDepth;
+			float 														MaxDepth;
+			VkPolygonMode 												PolygonMode;
+			VkCullModeFlags 											CullMode;
+			VkFrontFace 												FrontFace;
+			float 														LineWidth;
+			bool 														DepthTestEnable;
+			bool 														DepthWriteEnable;
+			VkCompareOp 												DepthCompareOp;
+			std::vector<VkPipelineColorBlendAttachmentState> 			AttachmentBlendingRules;
+
 			rasterizer();
-			rasterizer(std::vector<std::shared_ptr<shader>> aShaderList, std::array<unsigned int, 3> aResolution);
+			rasterizer(std::vector<std::shared_ptr<shader>> aShaderList);
 
 			// bind maps the vertex attributes in the shader to where the vertex buffer is intended to be bound.
 			void bind(uint32_t aBindingIndex, size_t aVertexStride, uint32_t aLocationIndex, size_t aVertexOffset, input_rate aInputRate = input_rate::VERTEX);
@@ -152,8 +151,6 @@ namespace geodesy::gpu {
 			// attach attaches an image to a pipeline's output, conveying the format and layout of the image during rendering.
 			void attach(uint32_t aAttachmentIndex, std::shared_ptr<image> aAttachmentImage, image::layout aImageLayout = image::layout::SHADER_READ_ONLY_OPTIMAL);
 			void attach(uint32_t aAttachmentIndex, image::format aFormat, image::layout aImageLayout = image::layout::SHADER_READ_ONLY_OPTIMAL);
-
-			void resize(std::array<unsigned int, 3> aResolution);
 
 		};
 
