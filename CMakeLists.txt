@@ -19,7 +19,7 @@ function(fetch_dependency AGIT_REPO AGIT_TAG ANAME)
         ${ANAME}
         GIT_REPOSITORY ${AGIT_REPO}
         GIT_TAG        ${AGIT_TAG}
-        SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dep/${ANAME}-src
+        SOURCE_DIR     ${CMAKE_SOURCE_DIR}/dep/${ANAME}
     )
     
     # Apply cache variables with intelligent type detection and FORCE override
@@ -94,7 +94,7 @@ if(VULKAN_SDK_STATIC_LIB AND Vulkan_FOUND)
     target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS}/)
 else()
     # Fallback to fetched Vulkan-Headers if Vulkan not found
-    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dep/vulkan-headers-src/include/)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dep/vulkan-headers/include/)
 endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/dep/)
 
