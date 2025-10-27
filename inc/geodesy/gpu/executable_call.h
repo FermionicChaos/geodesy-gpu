@@ -46,6 +46,7 @@ namespace geodesy::gpu {
 			std::shared_ptr<command_pool> 								aCommandPool,
 			std::shared_ptr<pipeline> 									aRasterizationPipeline,
 			std::vector<std::shared_ptr<image>> 						aImage,
+			std::array<unsigned int, 3> 								aResolution,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
 			std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding = {}

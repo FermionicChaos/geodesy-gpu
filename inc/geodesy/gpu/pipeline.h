@@ -129,7 +129,6 @@ namespace geodesy::gpu {
 			attachment 													DepthStencilAttachment;
 
 			// Fixed Function Options.
-			std::array<unsigned int, 3> 								Resolution;
 			VkPrimitiveTopology 										PrimitiveTopology;
 			float 														MinDepth;
 			float 														MaxDepth;
@@ -192,9 +191,6 @@ namespace geodesy::gpu {
 		// Requires on a single compute shader.
 		struct compute : public create_info {
 
-			std::array<unsigned int, 3> 								ThreadGroupCount; 		// Number of Thread Groups
-			std::array<unsigned int, 3> 								ThreadGroupSize; 		// Number of Threads Per Group
-
 			compute();
 			compute(std::shared_ptr<shader> aComputeShader, std::array<unsigned int, 3> aThreadGroupCount = { 1, 1, 1 }, std::array<unsigned int, 3> aThreadGroupSize = { 1, 1, 1 });
 
@@ -256,6 +252,7 @@ namespace geodesy::gpu {
 		void rasterize(
 			command_buffer* 				 							aCommandBuffer,
 			std::shared_ptr<framebuffer> 								aFramebuffer,
+			std::array<unsigned int, 3> 								aResolution,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
 			std::shared_ptr<descriptor::array> 							aDescriptorArray = nullptr
@@ -278,12 +275,14 @@ namespace geodesy::gpu {
 		// Rasterization API
 		VkResult rasterize(
 			std::shared_ptr<framebuffer> 								aFramebuffer,
+			std::array<unsigned int, 3> 								aResolution,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
 			std::shared_ptr<descriptor::array> 							aDescriptorArray = nullptr
 		);
 		VkResult rasterize(
 			std::vector<std::shared_ptr<image>> 						aImage,
+			std::array<unsigned int, 3> 								aResolution,
 			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
 			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
 			std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding = {}

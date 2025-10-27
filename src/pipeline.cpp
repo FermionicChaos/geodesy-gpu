@@ -403,9 +403,6 @@ namespace geodesy::gpu {
 		// Compute Pipeline has only one shader stage.
 		this->Shader = { aComputeShader };
 
-		this->ThreadGroupCount = aThreadGroupCount;
-		this->ThreadGroupSize = aThreadGroupSize;
-
 		// Go ahead and link the shader and build reflection.
 		EShMessages Message = (EShMessages)(
 			EShMessages::EShMsgAST |
@@ -623,30 +620,14 @@ namespace geodesy::gpu {
 			Tesselation.pNext 								= NULL;
 			Tesselation.flags 								= 0;
 
-			// Describes subset of target image to render to.
-			VkViewport View{};
-			View.x 											= 0.0f;
-			View.y 											= 0.0f;
-			View.width 										= (float)aRasterizer->Resolution[0];
-			View.height 									= (float)aRasterizer->Resolution[1];
-			View.minDepth 									= aRasterizer->MinDepth;
-			View.maxDepth 									= aRasterizer->MaxDepth;
-
-			// Determines which pixels get written to. 
-			VkRect2D Scissor{};
-			Scissor.offset.x 								= 0;
-			Scissor.offset.y 								= 0;
-			Scissor.extent.width 							= aRasterizer->Resolution[0];
-			Scissor.extent.height 							= aRasterizer->Resolution[1];
-
 			// Both are stupid options, just tie to resolution.
 			Viewport.sType 									= VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 			Viewport.pNext 									= NULL;
 			Viewport.flags 									= 0;
 			Viewport.viewportCount 							= 1;
-			Viewport.pViewports 							= &View;
+			Viewport.pViewports 							= NULL;
 			Viewport.scissorCount 							= 1;
-			Viewport.pScissors 								= &Scissor;			
+			Viewport.pScissors 								= NULL;
 
 			// Depth Clamp seems stupid, don't care about it.
 			Rasterizer.sType 								= VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -737,13 +718,8 @@ namespace geodesy::gpu {
 			else {
 				RasterizerCreateInfo.pDepthStencilState				= NULL;
 			}
-			RasterizerCreateInfo.pColorBlendState					= &ColorBlend;
-			if (false) {
-				RasterizerCreateInfo.pDynamicState					= &DynamicState;
-			}
-			else {
-				RasterizerCreateInfo.pDynamicState					= NULL;
-			}
+			RasterizerCreateInfo.pColorBlendState				= &ColorBlend;
+			RasterizerCreateInfo.pDynamicState					= &DynamicState;
 			RasterizerCreateInfo.layout							= this->Layout;
 			RasterizerCreateInfo.renderPass						= this->RenderPass;
 			RasterizerCreateInfo.subpass						= 0;
@@ -1160,16 +1136,31 @@ namespace geodesy::gpu {
 	void pipeline::rasterize(
 		command_buffer* 											aCommandBuffer,
 		std::shared_ptr<framebuffer> 								aFramebuffer,
+		std::array<unsigned int, 3> 								aResolution,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
 		std::shared_ptr<descriptor::array> 							aDescriptorArray
 	) {
+		// So if I designate a render area, the render pass will only affect those fragments for each attachment in the framebuffer.
+		// Say a pipeline in a subpass describes it will only render to a subset in the frame buffer, it will then map NDC to the 
+		// described sections of pixels, but anything outside of the render area will be ignored. Scissor operations act as a union 
+		// on a pipeline level, but with the render area, what ever region of pixels the scissors choose, it must ultimately be inside 
+		// the render area?
 		PFN_vkCmdDrawIndexed vkCmdDrawIndexed = (PFN_vkCmdDrawIndexed)this->Context->function_pointer("vkCmdDrawIndexed");
+		PFN_vkCmdSetViewport vkCmdSetViewport = (PFN_vkCmdSetViewport)this->Context->function_pointer("vkCmdSetViewport");
+		PFN_vkCmdSetScissor vkCmdSetScissor = (PFN_vkCmdSetScissor)this->Context->function_pointer("vkCmdSetScissor");
 		PFN_vkCmdDraw vkCmdDraw = (PFN_vkCmdDraw)this->Context->function_pointer("vkCmdDraw");
-		std::shared_ptr<rasterizer> Rasterizer = std::dynamic_pointer_cast<rasterizer>(this->CreateInfo);
-		VkRect2D RenderArea = { { 0, 0 }, { Rasterizer->Resolution[0], Rasterizer->Resolution[1] } };
+		// TODO: This can be expanded for multiple viewports and scissors later.
+		// Determines the render area for the render pass.
+		VkRect2D RenderArea 	= { { 0, 0 }, { aResolution[0], aResolution[1] } };
+		// Determines the viewport output for the pipeline.
+		VkViewport Viewport 	= { 0.0f, 0.0f, (float)aResolution[0], (float)aResolution[1], 0.0f, 1.0f };
+		// Much like render area, determines where fragments will be output to at pipeline level.
+		VkRect2D Scissor 		= { {0, 0}, {aResolution[0], aResolution[1]} };
 		this->begin(aCommandBuffer, aFramebuffer, RenderArea);
-		this->bind(aCommandBuffer, aVertexBuffer, aIndexBuffer, aDescriptorArray);
+		this->bind(aCommandBuffer, aVertexBuffer, aIndexBuffer, aDescriptorArray);		
+		vkCmdSetViewport(aCommandBuffer->Handle, 0, 1, &Viewport);
+		vkCmdSetScissor(aCommandBuffer->Handle, 0, 1, &Scissor);
 		if (aIndexBuffer != nullptr) {
 			vkCmdDrawIndexed(aCommandBuffer->Handle, aIndexBuffer->ElementCount, 1, 0, 0, 0);
 		}
@@ -1215,6 +1206,7 @@ namespace geodesy::gpu {
 
 	VkResult pipeline::rasterize(
 		std::shared_ptr<framebuffer> 								aFramebuffer,
+		std::array<unsigned int, 3> 								aResolution,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
 		std::shared_ptr<descriptor::array> 							aDescriptorArray
@@ -1225,7 +1217,7 @@ namespace geodesy::gpu {
 		auto CommandBuffer = CommandPool->create<command_buffer>();
 
 		Result = CommandBuffer->begin();
-		this->rasterize(CommandBuffer.get(), aFramebuffer, aVertexBuffer, aIndexBuffer, aDescriptorArray);
+		this->rasterize(CommandBuffer.get(), aFramebuffer, aResolution, aVertexBuffer, aIndexBuffer, aDescriptorArray);
 		Result = CommandBuffer->end();
 
 		Result = this->Context->execute_and_wait(device::operation::GRAPHICS, CommandBuffer);
@@ -1235,6 +1227,7 @@ namespace geodesy::gpu {
 
 	VkResult pipeline::rasterize(
 		std::vector<std::shared_ptr<image>> 						aImage,
+		std::array<unsigned int, 3> 								aResolution,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
 		std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding
@@ -1248,7 +1241,7 @@ namespace geodesy::gpu {
 		// Allocated GPU Resources needed to execute.
 		auto CommandPool = this->Context->create<command_pool>(device::operation::GRAPHICS);
 		auto CommandBuffer = CommandPool->create<command_buffer>();
-		auto Framebuffer = this->Context->create<framebuffer>(this->shared_from_this(), aImage, Rasterizer->Resolution);
+		auto Framebuffer = this->Context->create<framebuffer>(this->shared_from_this(), aImage, aResolution);
 		auto DescriptorArray = this->Context->create<descriptor::array>(this->shared_from_this());
 
 		// Bind Resources to Descriptor Sets
@@ -1274,7 +1267,7 @@ namespace geodesy::gpu {
 
 		// Write Command Buffer here.
 		Result = CommandBuffer->begin();
-		this->rasterize(CommandBuffer.get(), Framebuffer, aVertexBuffer, aIndexBuffer, DescriptorArray);
+		this->rasterize(CommandBuffer.get(), Framebuffer, aResolution, aVertexBuffer, aIndexBuffer, DescriptorArray);
 		Result = CommandBuffer->end();
 
 		// Execute Command Buffer here.

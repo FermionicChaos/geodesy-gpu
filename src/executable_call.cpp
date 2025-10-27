@@ -11,6 +11,7 @@ namespace geodesy::gpu {
 		std::shared_ptr<command_pool> 								aCommandPool,
 		std::shared_ptr<pipeline> 									aRasterizationPipeline,
 		std::vector<std::shared_ptr<image>> 						aImage,
+		std::array<unsigned int, 3> 								aResolution,
 		std::vector<std::shared_ptr<buffer>> 						aVertexBuffer,
 		std::shared_ptr<buffer> 									aIndexBuffer,
 		std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding
@@ -21,7 +22,7 @@ namespace geodesy::gpu {
 		this->Pipeline = aRasterizationPipeline;
 
 		// Allocate Framebuffer object metadata.
-		this->Framebuffer = aContext->create<framebuffer>(aRasterizationPipeline, aImage, Rasterizer->Resolution);
+		this->Framebuffer = aContext->create<framebuffer>(aRasterizationPipeline, aImage, aResolution);
 
 		// Allocate Descriptor Set Array
 		if (Rasterizer->DescriptorSetLayoutBinding.size() > 0) {
@@ -51,7 +52,7 @@ namespace geodesy::gpu {
 
 		// Record to Command Buffer
 		Result = this->begin();
-		this->Pipeline->rasterize(this, this->Framebuffer, aVertexBuffer, aIndexBuffer, this->DescriptorArray);
+		this->Pipeline->rasterize(this, this->Framebuffer, aResolution, aVertexBuffer, aIndexBuffer, this->DescriptorArray);
 		Result = this->end();
 	}
 
