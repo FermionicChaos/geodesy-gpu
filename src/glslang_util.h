@@ -6,27 +6,27 @@
 
 #include <geodesy/gpu/config.h>
 
-//#include <glslang-src/glslang/Include/arrays.h>
-#include <glslang-src/glslang/Include/BaseTypes.h>
-#include <glslang-src/glslang/Include/Common.h>
-#include <glslang-src/glslang/Include/ConstantUnion.h>
-#include <glslang-src/glslang/Include/intermediate.h>
-#include <glslang-src/glslang/Include/PoolAlloc.h>
-#include <glslang-src/glslang/Include/ResourceLimits.h>
-#include <glslang-src/glslang/Include/SpirvIntrinsics.h>
-#include <glslang-src/glslang/Include/Types.h>
+//#include <glslang/glslang/Include/arrays.h>
+#include <glslang/glslang/Include/BaseTypes.h>
+#include <glslang/glslang/Include/Common.h>
+#include <glslang/glslang/Include/ConstantUnion.h>
+#include <glslang/glslang/Include/intermediate.h>
+#include <glslang/glslang/Include/PoolAlloc.h>
+#include <glslang/glslang/Include/ResourceLimits.h>
+#include <glslang/glslang/Include/SpirvIntrinsics.h>
+#include <glslang/glslang/Include/Types.h>
 
-#include <glslang-src/glslang/MachineIndependent/localintermediate.h>
+#include <glslang/glslang/MachineIndependent/localintermediate.h>
 
-#include <glslang-src/glslang/Public/ShaderLang.h>
+#include <glslang/glslang/Public/ShaderLang.h>
 
 // Converts shader source into SPIRV.
-//#include <glslang-src/SPIRV/SPIRV/SpvTools.h>
-//#include <glslang-src/SPIRV/SPIRV/Logger.h>
-#include <glslang-src/SPIRV/GlslangToSpv.h>
-//#include <glslang-src/SPIRV/SPIRV/spirv.hpp>
-//#include <glslang-src/SPIRV/SPIRV/spvIR.h>
-//#include <glslang-src/SPIRV/SPIRV/SPVRemapper.h>
+//#include <glslang/SPIRV/SPIRV/SpvTools.h>
+//#include <glslang/SPIRV/SPIRV/Logger.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
+//#include <glslang/SPIRV/SPIRV/spirv.hpp>
+//#include <glslang/SPIRV/SPIRV/spvIR.h>
+//#include <glslang/SPIRV/SPIRV/SPVRemapper.h>
 
 // Included for compiling
 #include "ResourceLimits.h"
