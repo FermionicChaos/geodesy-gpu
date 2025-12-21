@@ -36,6 +36,14 @@ namespace geodesy::gpu {
 		return shader::stage::UNKNOWN;
 	}
 
+	bool shader::initialize() {
+		return glslang::InitializeProcess();
+	}
+
+	void shader::terminate() {
+		glslang::FinalizeProcess();
+	}
+
 	shader::shader() {
 		this->Stage			= shader::stage::UNKNOWN;
 		this->Handle		= nullptr;
@@ -77,14 +85,6 @@ namespace geodesy::gpu {
 		Temp.pName					= "main";  // Entry Point function name
 		Temp.pSpecializationInfo	= NULL;
 		return Temp;
-	}
-
-	bool shader::initialize() {
-		return glslang::InitializeProcess();
-	}
-
-	void shader::terminate() {
-		glslang::FinalizeProcess();
 	}
 
 	bool shader::compile_source(stage aShaderStage, std::string aSourceCode) {

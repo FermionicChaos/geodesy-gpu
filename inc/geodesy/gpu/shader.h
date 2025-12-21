@@ -28,6 +28,9 @@ namespace geodesy::gpu {
 			PIXEL								= FRAGMENT
 		};
 
+		static bool initialize();
+		static void terminate();
+
 		// ---------- Host Memory Object ---------- //
 		stage								Stage;
 		std::shared_ptr<glslang::TShader> 	Handle;
@@ -40,10 +43,6 @@ namespace geodesy::gpu {
 		VkPipelineShaderStageCreateInfo pipeline_shader_stage_create_info();
 
 	private:
-
-		static bool initialize();
-		static void terminate();
-
 		// TODO: Rename to something else, does not generate SPIRV.
 		bool compile_source(stage aShaderStage, std::string aSourceCode);
 
