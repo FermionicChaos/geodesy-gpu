@@ -40,7 +40,6 @@
 #include "gpu/framebuffer.h"
 #include "gpu/pipeline.h"
 #include "gpu/framechain.h"
-#include "gpu/swapchain.h"
 #include "gpu/executable_call.h"
 #include "gpu/context.h"
 #include "gpu/instance.h"

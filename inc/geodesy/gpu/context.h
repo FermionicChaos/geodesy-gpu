@@ -19,7 +19,6 @@
 #include "acceleration_structure.h"
 #include "pipeline.h"
 #include "framechain.h"
-#include "swapchain.h"
 
 namespace geodesy::gpu {
 
