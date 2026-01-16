@@ -12,9 +12,9 @@ namespace geodesy::gpu {
 
 	class descriptor {
 	public:
-		
-		static const VkSamplerCreateInfo 								DefaultSamplerCreateInfo;
-		
+
+		static const VkSamplerCreateInfo DefaultSamplerCreateInfo;
+
 		// class pool {
 		// public:
 		//
@@ -30,10 +30,10 @@ namespace geodesy::gpu {
 		class array : public resource {
 		public:
 
-			std::vector<std::vector<VkDescriptorSetLayoutBinding>> 		DescriptorSetLayoutBinding;		// Contains map of available (set, binding) pairs which resources can be bound to.
-			VkDescriptorPool 											DescriptorPool;					// Descriptor Pool for managing descriptor sets.
-			std::vector<VkDescriptorSet> 								DescriptorSet;					// DS used for binding resource references to pipeline.
-			VkSampler 													SamplingMetadata;				// Sampling metadata for the descriptor set.
+			std::vector<std::vector<VkDescriptorSetLayoutBinding>> DescriptorSetLayoutBinding;
+			VkDescriptorPool DescriptorPool;
+			std::vector<VkDescriptorSet> DescriptorSet;
+			VkSampler SamplingMetadata;
 
 			array();
 			array(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, VkSamplerCreateInfo aSamplerCreateInfo = DefaultSamplerCreateInfo);

@@ -12,10 +12,10 @@ namespace geodesy::gpu {
 	class semaphore_pool {
 	public:
 
-		std::shared_ptr<context> 			Context;
-		std::vector<VkSemaphore> 			Total;
-		std::queue<VkSemaphore> 			Available;
-		std::unordered_set<VkSemaphore> 	InUse;
+		std::shared_ptr<context> Context;
+		std::vector<VkSemaphore> Total;
+		std::queue<VkSemaphore> Available;
+		std::unordered_set<VkSemaphore> InUse;
 
 		// semaphore_pool(std::shared_ptr<context> aContext, size_t aSemaphoreCount);
 		// ~semaphore_pool();
@@ -23,7 +23,7 @@ namespace geodesy::gpu {
 		VkSemaphore acquire();
 		void release(VkSemaphore aSemaphore);
 		void reset();
-		
+
 	};
 }
 

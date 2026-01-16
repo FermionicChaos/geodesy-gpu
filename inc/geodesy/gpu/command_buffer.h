@@ -9,10 +9,10 @@ namespace geodesy::gpu {
 
 	class command_buffer : public resource {
 	public:
-	
-		std::shared_ptr<command_pool> 		CommandPool;
 
-		VkCommandBuffer 					Handle;
+		std::shared_ptr<command_pool> CommandPool;
+
+		VkCommandBuffer Handle;
 
 		command_buffer();
 		command_buffer(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool, VkCommandBufferLevel aLevel = VK_COMMAND_BUFFER_LEVEL_PRIMARY);

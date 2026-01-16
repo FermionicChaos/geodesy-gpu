@@ -28,32 +28,30 @@ namespace geodesy::gpu {
 	public:
 
 		struct queue {
-			int 		FamilyIndex;
-			int 		Index;
-			VkQueue 	Handle;
+			int FamilyIndex;
+			int Index;
+			VkQueue Handle;
 		};
 
-		// Insure that these objects outlive context.
-		std::shared_ptr<instance> 								Instance;
-		std::shared_ptr<device> 								Device;
-		
-		std::map<unsigned int, queue> 							Queue;
-		VkDevice 												Handle;
+		std::shared_ptr<instance> Instance;
+		std::shared_ptr<device> Device;
+
+		std::map<unsigned int, queue> Queue;
+		VkDevice Handle;
 
 		context();
 		context(
-			std::shared_ptr<instance> 		aInstance,
-			std::shared_ptr<device> 		aDevice,
-			std::vector<unsigned int> 		aOperations,
-			std::set<std::string> 			aLayers = {},
-			std::set<std::string> 			aExtensions = {},
-			void* 							aNext = NULL
+			std::shared_ptr<instance> aInstance,
+			std::shared_ptr<device> aDevice,
+			std::vector<unsigned int> aOperations,
+			std::set<std::string> aLayers = {},
+			std::set<std::string> aExtensions = {},
+			void* aNext = NULL
 		);
 		~context();
 
 		void* function_pointer(std::string aFunctionName) const;
 
-		// Memory Allocation Tools
 		VkMemoryRequirements get_buffer_memory_requirements(VkBuffer aBufferHandle) const;
 		VkMemoryRequirements get_image_memory_requirements(VkImage aImageHandle) const;
 		VkDeviceMemory allocate_memory(VkMemoryRequirements aMemoryRequirements, unsigned int aMemoryType, void* aNext = NULL);
@@ -61,11 +59,8 @@ namespace geodesy::gpu {
 
 		queue get_execution_queue(unsigned int aOperation);
 
-		// Wait on device to become idle.
 		VkResult wait();
-		// Wait on specific queue to become idle.
 		VkResult wait(device::operation aDeviceOperation);
-		// Wait on specific fence to become signaled.
 		VkResult wait(std::shared_ptr<fence> aFence);
 		VkResult wait(std::vector<std::shared_ptr<fence>> aFenceList, VkBool32 aWaitOnAll = VK_TRUE);
 
@@ -83,7 +78,6 @@ namespace geodesy::gpu {
 		VkResult execute_and_wait(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_buffer>> aCommandBufferList);
 		VkResult execute_and_wait(device::operation aDeviceOperation, std::vector<std::shared_ptr<command_batch>> aCommandBatchList);
 
-		// Generic resource creation with variadic template arguments
 		template<typename T, typename... Args>
 		std::shared_ptr<T> create(Args&&... args) {
 			return geodesy::make<T>(this->shared_from_this(), std::forward<Args>(args)...);

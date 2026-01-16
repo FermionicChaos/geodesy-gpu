@@ -15,19 +15,16 @@ namespace geodesy::gpu {
 	class framechain {
 	public:
 
-		std::shared_ptr<context> 													Context;
-		double																		FrameRate;
-		std::vector<std::map<std::string, std::shared_ptr<image>>> 					Image;
-		std::array<unsigned int, 3>													Resolution;
+		std::shared_ptr<context> Context;
+		double FrameRate;
+		std::vector<std::map<std::string, std::shared_ptr<image>>> Image;
+		std::array<unsigned int, 3> Resolution;
 
-		uint32_t																	ReadIndex;
-		uint32_t																	DrawIndex;
+		uint32_t ReadIndex;
+		uint32_t DrawIndex;
 
 		framechain();
-		
-		// Returns two semaphores:
-		// First: The semaphore used to wait for the next frame to be ready for reading.
-		// Second: The semaphore that will be used to signal presentation when rendering is complete.
+
 		virtual VkResult next_frame();
 		virtual std::pair<std::shared_ptr<semaphore>, std::shared_ptr<semaphore>> get_acquire_present_semaphore_pair();
 

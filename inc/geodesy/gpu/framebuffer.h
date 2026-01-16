@@ -12,14 +12,14 @@ namespace geodesy::gpu {
 	class framebuffer : public resource {
 	public:
 
-		std::vector<VkClearValue> 	ClearValue;
-		VkFramebuffer 				Handle;
+		std::vector<VkClearValue> ClearValue;
+		VkFramebuffer Handle;
 
 		framebuffer();
 		framebuffer(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, std::vector<std::shared_ptr<image>> aImageAttachements, std::array<unsigned int, 3> aResolution);
 		framebuffer(std::shared_ptr<context> aContext, std::shared_ptr<pipeline> aPipeline, std::map<std::string, std::shared_ptr<image>> aImage, std::vector<std::string> aAttachmentSelection, std::array<unsigned int, 3> aResolution);
 		~framebuffer();
-		
+
 	};
 
 }

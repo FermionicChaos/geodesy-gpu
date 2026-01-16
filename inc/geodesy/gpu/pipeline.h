@@ -36,54 +36,37 @@ namespace geodesy::gpu {
 	class pipeline : public std::enable_shared_from_this<pipeline>, public resource {
 	public:
 
-		// The point of these structure is a straightforward api to map vulkan managed resources,
-		// to slots indicated by the shaders provided.
 		enum stage : unsigned int {
-			TOP_OF_PIPE 							= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-			DRAW_INDIRECT 							= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-			VERTEX_INPUT 							= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-			VERTEX_SHADER 							= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
-			TESSELLATION_CONTROL_SHADER 			= VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT,
-			TESSELLATION_EVALUATION_SHADER 			= VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT,
-			GEOMETRY_SHADER 						= VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT,
-			FRAGMENT_SHADER 						= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			EARLY_FRAGMENT_TESTS 					= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-			LATE_FRAGMENT_TESTS 					= VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-			COLOR_ATTACHMENT_OUTPUT 				= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-			COMPUTE_SHADER 							= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-			TRANSFER 								= VK_PIPELINE_STAGE_TRANSFER_BIT,
-			BOTTOM_OF_PIPE 							= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-			HOST 									= VK_PIPELINE_STAGE_HOST_BIT,
-			ALL_GRAPHICS 							= VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
-			ALL_COMMANDS 							= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-			NONE 									= VK_PIPELINE_STAGE_NONE,
-			// TRANSFORM_FEEDBACK_EXT 					= VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT,
-			// CONDITIONAL_RENDERING_EXT 				= VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT,
-			// ACCELERATION_STRUCTURE_BUILD_KHR 		= VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-			// RAY_TRACING_SHADER_KHR 					= VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR,
-			// FRAGMENT_DENSITY_PROCESS_EXT 			= VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT,
-			// FRAGMENT_SHADING_RATE_ATTACHMENT_KHR 	= VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR,
-			// COMMAND_PREPROCESS_NV 					= VK_PIPELINE_STAGE_COMMAND_PREPROCESS_BIT_NV,
-			// TASK_SHADER_EXT 						= VK_PIPELINE_STAGE_TASK_SHADER_BIT_EXT,
-			// MESH_SHADER_EXT 						= VK_PIPELINE_STAGE_MESH_SHADER_BIT_EXT,
-			// SHADING_RATE_IMAGE_NV 					= VK_PIPELINE_STAGE_SHADING_RATE_IMAGE_BIT_NV,
-			// RAY_TRACING_SHADER_NV 					= VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_NV,
-			// ACCELERATION_STRUCTURE_BUILD_NV 		= VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_NV,
-			// TASK_SHADER_NV 							= VK_PIPELINE_STAGE_TASK_SHADER_BIT_NV,
-			// MESH_SHADER_NV 							= VK_PIPELINE_STAGE_MESH_SHADER_BIT_NV,
-			// NONE_KHR 								= VK_PIPELINE_STAGE_NONE_KHR,
+			TOP_OF_PIPE = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+			DRAW_INDIRECT = VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+			VERTEX_INPUT = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+			VERTEX_SHADER = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+			TESSELLATION_CONTROL_SHADER = VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT,
+			TESSELLATION_EVALUATION_SHADER = VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT,
+			GEOMETRY_SHADER = VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT,
+			FRAGMENT_SHADER = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			EARLY_FRAGMENT_TESTS = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+			LATE_FRAGMENT_TESTS = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+			COLOR_ATTACHMENT_OUTPUT = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			COMPUTE_SHADER = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			TRANSFER = VK_PIPELINE_STAGE_TRANSFER_BIT,
+			BOTTOM_OF_PIPE = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+			HOST = VK_PIPELINE_STAGE_HOST_BIT,
+			ALL_GRAPHICS = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+			ALL_COMMANDS = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			NONE = VK_PIPELINE_STAGE_NONE,
 		};
 
 		enum type : int {
-			UNKNOWN 							= -1,
-			RASTERIZER							= VK_PIPELINE_BIND_POINT_GRAPHICS,
-			COMPUTE 							= VK_PIPELINE_BIND_POINT_COMPUTE,
-			RAY_TRACER 							= VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
+			UNKNOWN = -1,
+			RASTERIZER = VK_PIPELINE_BIND_POINT_GRAPHICS,
+			COMPUTE = VK_PIPELINE_BIND_POINT_COMPUTE,
+			RAY_TRACER = VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR,
 		};
 
 		enum input_rate {
-			VERTEX 								= VK_VERTEX_INPUT_RATE_VERTEX,
-			INSTANCE 							= VK_VERTEX_INPUT_RATE_INSTANCE,
+			VERTEX = VK_VERTEX_INPUT_RATE_VERTEX,
+			INSTANCE = VK_VERTEX_INPUT_RATE_INSTANCE,
 		};
 
 		struct create_info {
@@ -111,43 +94,38 @@ namespace geodesy::gpu {
 			friend class pipeline;
 
 			struct attribute {
-				VkVertexInputAttributeDescription 		Description;
-				const glslang::TObjectReflection* 		Variable;
+				VkVertexInputAttributeDescription Description;
+				const glslang::TObjectReflection* Variable;
 			};
 
 			struct attachment {
-				VkAttachmentDescription 				Description;
-				const glslang::TObjectReflection* 		Variable;
+				VkAttachmentDescription Description;
+				const glslang::TObjectReflection* Variable;
 			};
 
-			// Vertex metadata
-			std::vector<VkVertexInputBindingDescription> 				VertexBufferBindingDescription;		// Vulkan Spec Minimum Req: 16 Vertex Buffer Bindings
-			std::vector<attribute> 										VertexAttribute;					// Vulkan Spec Minimum Req: 16 Vertex Attributes
+			std::vector<VkVertexInputBindingDescription> VertexBufferBindingDescription;
+			std::vector<attribute> VertexAttribute;
 
-			// Attachment metadata
-			std::vector<attachment> 									ColorAttachment;					// Vulkan Spec Minimum Req: 4 Attachments
-			attachment 													DepthStencilAttachment;
+			std::vector<attachment> ColorAttachment;
+			attachment DepthStencilAttachment;
 
-			// Fixed Function Options.
-			VkPrimitiveTopology 										PrimitiveTopology;
-			float 														MinDepth;
-			float 														MaxDepth;
-			VkPolygonMode 												PolygonMode;
-			VkCullModeFlags 											CullMode;
-			VkFrontFace 												FrontFace;
-			float 														LineWidth;
-			bool 														DepthTestEnable;
-			bool 														DepthWriteEnable;
-			VkCompareOp 												DepthCompareOp;
-			std::vector<VkPipelineColorBlendAttachmentState> 			AttachmentBlendingRules;
+			VkPrimitiveTopology PrimitiveTopology;
+			float MinDepth;
+			float MaxDepth;
+			VkPolygonMode PolygonMode;
+			VkCullModeFlags CullMode;
+			VkFrontFace FrontFace;
+			float LineWidth;
+			bool DepthTestEnable;
+			bool DepthWriteEnable;
+			VkCompareOp DepthCompareOp;
+			std::vector<VkPipelineColorBlendAttachmentState> AttachmentBlendingRules;
 
 			rasterizer();
 			rasterizer(std::vector<std::shared_ptr<shader>> aShaderList);
 
-			// bind maps the vertex attributes in the shader to where the vertex buffer is intended to be bound.
 			void bind(uint32_t aBindingIndex, size_t aVertexStride, uint32_t aLocationIndex, size_t aVertexOffset, input_rate aInputRate = input_rate::VERTEX);
 
-			// attach attaches an image to a pipeline's output, conveying the format and layout of the image during rendering.
 			void attach(uint32_t aAttachmentIndex, std::shared_ptr<image> aAttachmentImage, image::layout aImageLayout = image::layout::SHADER_READ_ONLY_OPTIMAL);
 			void attach(uint32_t aAttachmentIndex, image::format aFormat, image::layout aImageLayout = image::layout::SHADER_READ_ONLY_OPTIMAL);
 
@@ -157,30 +135,22 @@ namespace geodesy::gpu {
 		struct raytracer : public create_info {
 			
 			struct shader_group {
-
-				// enum type {
-				// 	GENERAL 				= VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR,
-				// 	TRIANGLES_HIT_GROUP 	= VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR,
-				// 	PROCEDURAL_HIT_GROUP 	= VK_RAY_TRACING_SHADER_GROUP_TYPE_PROCEDURAL_HIT_GROUP_KHR,
-				// };
-
-				// type 						Type;
-				std::shared_ptr<shader> 		GeneralShader;
-				std::shared_ptr<shader> 		ClosestHitShader;
-				std::shared_ptr<shader> 		AnyHitShader;
-				std::shared_ptr<shader> 		IntersectionShader;
+				std::shared_ptr<shader> GeneralShader;
+				std::shared_ptr<shader> ClosestHitShader;
+				std::shared_ptr<shader> AnyHitShader;
+				std::shared_ptr<shader> IntersectionShader;
 			};
 
 			struct shader_binding_table {
-				std::shared_ptr<buffer> 			Buffer;
-				VkStridedDeviceAddressRegionKHR 	Raygen;
-				VkStridedDeviceAddressRegionKHR 	Miss;
-				VkStridedDeviceAddressRegionKHR 	Hit;
-				VkStridedDeviceAddressRegionKHR 	Callable;
+				std::shared_ptr<buffer> Buffer;
+				VkStridedDeviceAddressRegionKHR Raygen;
+				VkStridedDeviceAddressRegionKHR Miss;
+				VkStridedDeviceAddressRegionKHR Hit;
+				VkStridedDeviceAddressRegionKHR Callable;
 			};
 
-			uint32_t 						MaxRecursionDepth;
-			std::vector<shader_group> 		ShaderGroup;
+			uint32_t MaxRecursionDepth;
+			std::vector<shader_group> ShaderGroup;
 
 			raytracer();
 			raytracer(std::vector<shader_group> aShaderGroup, uint32_t aMaxRecursionDepth);
@@ -202,41 +172,29 @@ namespace geodesy::gpu {
 			unsigned int aSrcAccess, unsigned int aDstAccess
 		);
 		static void barrier(
-			command_buffer* aCommandBuffer, 
-			unsigned int aSrcStage, unsigned int aDstStage, 
-			const std::vector<VkMemoryBarrier>& aMemoryBarrier = {}, 
-			const std::vector<VkBufferMemoryBarrier>& aBufferBarrier = {}, 
+			command_buffer* aCommandBuffer,
+			unsigned int aSrcStage, unsigned int aDstStage,
+			const std::vector<VkMemoryBarrier>& aMemoryBarrier = {},
+			const std::vector<VkBufferMemoryBarrier>& aBufferBarrier = {},
 			const std::vector<VkImageMemoryBarrier>& aImageBarrier = {}
 		);
 
-		// Reference to Host Memory
-		std::shared_ptr<create_info> 							CreateInfo;
+		std::shared_ptr<create_info> CreateInfo;
 
-		// Pipline Construction.
-		std::vector<VkPipelineShaderStageCreateInfo> 			Stage;
-		VkPipelineBindPoint 									BindPoint;
-		VkPipelineLayout 										Layout;
-		VkPipelineCache 										Cache;
-		VkPipeline 												Handle;
-		VkDescriptorPool 										DescriptorPool;
-		std::vector<VkDescriptorSetLayout> 						DescriptorSetLayout;
-		// Rasterizer Specific
-		VkRenderPass											RenderPass;
-		// Raytracer Specific
-		raytracer::shader_binding_table 						ShaderBindingTable;
+		std::vector<VkPipelineShaderStageCreateInfo> Stage;
+		VkPipelineBindPoint BindPoint;
+		VkPipelineLayout Layout;
+		VkPipelineCache Cache;
+		VkPipeline Handle;
+		VkDescriptorPool DescriptorPool;
+		std::vector<VkDescriptorSetLayout> DescriptorSetLayout;
+		VkRenderPass RenderPass;
+		raytracer::shader_binding_table ShaderBindingTable;
 
 		pipeline();
-
-		// Creates rasterizer pipeline.
 		pipeline(std::shared_ptr<context> aContext, std::shared_ptr<rasterizer> aRasterizer, VkRenderPass aRenderPass = VK_NULL_HANDLE, uint32_t aSubpassIndex = 0);
-
-		// Creates raytracer pipeline.
 		pipeline(std::shared_ptr<context> aContext, std::shared_ptr<raytracer> aRaytracer);
-
-		// Creates compute pipeline.
 		pipeline(std::shared_ptr<context> aContext, std::shared_ptr<compute> aCompute);
-
-		// Destructor
 		~pipeline();
 
 		// Can be used for rasterization, raytracing, or compute.

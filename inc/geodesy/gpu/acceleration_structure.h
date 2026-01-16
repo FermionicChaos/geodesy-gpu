@@ -15,33 +15,30 @@ namespace geodesy::gpu {
 
 	class acceleration_structure : public resource {
 	public:
-	
-		std::shared_ptr<buffer>				Buffer;
-		std::shared_ptr<buffer> 			UpdateScratchBuffer;
-		std::shared_ptr<buffer> 			BuildScratchBuffer;
-		std::shared_ptr<buffer> 			InstanceBuffer;
-		VkAccelerationStructureKHR			Handle;
-		VkDeviceAddress						DeviceAddress;
+
+		std::shared_ptr<buffer> Buffer;
+		std::shared_ptr<buffer> UpdateScratchBuffer;
+		std::shared_ptr<buffer> BuildScratchBuffer;
+		std::shared_ptr<buffer> InstanceBuffer;
+		VkAccelerationStructureKHR Handle;
+		VkDeviceAddress DeviceAddress;
 
 		acceleration_structure();
-		// Build Bottom Level AS (Mesh Geometry Data).
 		acceleration_structure(
-			std::shared_ptr<context> 									aContext,
-			std::shared_ptr<buffer> 									aVertexBuffer,				// Vertex Data Buffer
-			size_t 														aVertexPositionOffset, 		// Position Vector Offset in Vertex Struct
-			VkFormat 													aVertexPositionFormat,		// Position Vector Format
-			size_t 														aVertexStride, 				// Size of Vertex Struct
-			size_t 														aVertexCount, 				// Number of Vertices in Buffer
-			std::shared_ptr<buffer> 									aIndexBuffer, 				// Index Data Buffer
-			VkIndexType 												aIndexType,					// Internal Data Type of Indices
-			size_t 														aTriangleCount 				// Number of Faces (Triangles)
+			std::shared_ptr<context> aContext,
+			std::shared_ptr<buffer> aVertexBuffer,
+			size_t aVertexPositionOffset,
+			VkFormat aVertexPositionFormat,
+			size_t aVertexStride,
+			size_t aVertexCount,
+			std::shared_ptr<buffer> aIndexBuffer,
+			VkIndexType aIndexType,
+			size_t aTriangleCount
 		);
-		// Build Top Level AS (Mesh Instances).
 		acceleration_structure(
-			std::shared_ptr<context> 									aContext, 
-			const std::vector<VkAccelerationStructureInstanceKHR>& 		aInstanceList	// List of Mesh Instances in Scene
+			std::shared_ptr<context> aContext,
+			const std::vector<VkAccelerationStructureInstanceKHR>& aInstanceList
 		);
-		// Clear out resources
 		~acceleration_structure();
 
 		VkDeviceAddress device_address() const;

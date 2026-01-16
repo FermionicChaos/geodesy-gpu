@@ -29,9 +29,9 @@ namespace geodesy::gpu {
 	class executable_call : public command_buffer {
 	public:
 
-		std::shared_ptr<pipeline> 					Pipeline;
-		std::shared_ptr<framebuffer> 				Framebuffer;
-		std::shared_ptr<descriptor::array> 			DescriptorArray;
+		std::shared_ptr<pipeline> Pipeline;
+		std::shared_ptr<framebuffer> Framebuffer;
+		std::shared_ptr<descriptor::array> DescriptorArray;
 
 		executable_call(std::shared_ptr<context> aContext, std::shared_ptr<command_pool> aCommandPool);
 
@@ -41,14 +41,14 @@ namespace geodesy::gpu {
 	public:
 
 		rasterization_call(
-			std::shared_ptr<context> 									aContext,
-			std::shared_ptr<command_pool> 								aCommandPool,
-			std::shared_ptr<pipeline> 									aRasterizationPipeline,
-			std::vector<std::shared_ptr<image>> 						aImage,
-			std::array<unsigned int, 3> 								aResolution,
-			std::vector<std::shared_ptr<buffer>> 						aVertexBuffer = {},
-			std::shared_ptr<buffer> 									aIndexBuffer = nullptr,
-			std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding = {}
+			std::shared_ptr<context> aContext,
+			std::shared_ptr<command_pool> aCommandPool,
+			std::shared_ptr<pipeline> aRasterizationPipeline,
+			std::vector<std::shared_ptr<image>> aImage,
+			std::array<unsigned int, 3> aResolution,
+			std::vector<std::shared_ptr<buffer>> aVertexBuffer = {},
+			std::shared_ptr<buffer> aIndexBuffer = nullptr,
+			std::map<std::pair<int, int>, std::shared_ptr<resource>> aUniformSetBinding = {}
 		);
 
 	};
@@ -57,11 +57,11 @@ namespace geodesy::gpu {
 	public:
 
 		raytracing_call(
-			std::shared_ptr<context> 									aContext,
-			std::shared_ptr<command_pool> 								aCommandPool,
-			std::shared_ptr<pipeline> 									aRaytracerPipeline,
-			std::array<unsigned int, 3> 								aResolution,
-			std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding = {}
+			std::shared_ptr<context> aContext,
+			std::shared_ptr<command_pool> aCommandPool,
+			std::shared_ptr<pipeline> aRaytracerPipeline,
+			std::array<unsigned int, 3> aResolution,
+			std::map<std::pair<int, int>, std::shared_ptr<resource>> aUniformSetBinding = {}
 		);
 
 	};
@@ -70,13 +70,13 @@ namespace geodesy::gpu {
 	public:
 
 		compute_call(
-			std::shared_ptr<context> 									aContext,
-			std::shared_ptr<command_pool> 								aCommandPool,
-			std::shared_ptr<pipeline> 									aComputePipeline,
-			std::array<unsigned int, 3> 								aThreadGroupCount,
-			std::map<std::pair<int, int>, std::shared_ptr<resource>> 	aUniformSetBinding = {}
+			std::shared_ptr<context> aContext,
+			std::shared_ptr<command_pool> aCommandPool,
+			std::shared_ptr<pipeline> aComputePipeline,
+			std::array<unsigned int, 3> aThreadGroupCount,
+			std::map<std::pair<int, int>, std::shared_ptr<resource>> aUniformSetBinding = {}
 		);
-		
+
 	};
 
 }
